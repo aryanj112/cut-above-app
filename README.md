@@ -7,7 +7,7 @@ This is the official **Cut Above** application, built with [GlueStack](https://g
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/cut-above-app.git
+git clone https://github.com/aryanj112/cut-above-app.git
 cd cut-above-app
 ```
 
