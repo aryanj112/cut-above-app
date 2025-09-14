@@ -9,7 +9,7 @@ export default function Tab2() {
     <Center className="flex-1">
       <Heading className="font-bold text-2xl">Expo - Tab 1</Heading>
       <Divider className="my-[30px] w-[80%]" />
-      <Text className="p-4">Example below to use gluestack-ui components.</Text>
+      <Text className="p-4">HOME PAGE</Text>
       <EditScreenInfo path="app/(app)/(tabs)/tab1.tsx" />
     </Center>
   );
