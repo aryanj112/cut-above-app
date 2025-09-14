@@ -9,7 +9,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
     <Box>
       <Box className="items-center mx-4">
         <Text className="text-center text-typography-950">
-          Open up the code for this screen:
+          Peepee poopoo
         </Text>
         <Box className="rounded-sm p-2 my-2 bg-secondary-200">
           <Text className="text-sm leading-5 text-center font-SpaceMono">
