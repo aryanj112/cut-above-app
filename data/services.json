@@ -1,0 +1,74 @@
+{
+  "services": [
+    {
+      "id": "1",
+      "name": "Adult Hair Cut",
+      "price": 28,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "2",
+      "name": "Kid Hair Cut (<12y)",
+      "price": 23,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "3",
+      "name": "Teen Hair Cut (13y-17y)",
+      "price": 25,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "4",
+      "name": "Senior Hair Cut (65y+)",
+      "price": 25,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "5",
+      "name": "Shape Up",
+      "price": 20,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "6",
+      "name": "Beard Trim",
+      "price": 15,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "7",
+      "name": "Before & After Hours Cut",
+      "price": 50,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "8",
+      "name": "New Client Hair Cut",
+      "price": 35,
+      "timeMin": 15,
+      "isDeal": false
+    },
+    {
+      "id": "p1",
+      "name": "Adult Cut + Beard Trim",
+      "price": 35,
+      "timeMin": 30,
+      "isDeal": true
+    },
+    {
+      "id": "p2",
+      "name": "Shape Up + Beard",
+      "price": 25,
+      "timeMin": 15,
+      "isDeal": true
+    }
+  ]
+}
