@@ -2,7 +2,7 @@ import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import {Image} from 'react-native';
+import { Image } from 'react-native';
 
 
 function TabBarIcon(props: {
@@ -60,21 +60,6 @@ export default function TabLayout() {
               resizeMode="contain"
             />
           ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="tab1"
-        options={{
-          title: 'Tab 1',
-          tabBarIcon: ({ color }) => <TabBarIcon name="star-o" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="tab2"
-        options={{
-          title: 'Tab 2',
-          tabBarIcon: ({ color }) => <TabBarIcon name="star-o" color={color} />,
         }}
       />
     </Tabs>
