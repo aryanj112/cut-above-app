@@ -12,30 +12,35 @@ type ServiceCardProps = {
 
 export function ServiceCard({ name, price, time, isDeal, onAdd }: ServiceCardProps) {
   return (
-    <Card
-      size="md"
-      className="mb-3"
-    >
-      <View className="flex flex-row justify-between items-center">
-        <View>
-          <Text className="text-lg font-semibold">{name}</Text>
-          <Text className="text-gray-500">
-            {time} min - ${price}
-          </Text>
-        </View>
+    <View style={{ marginBottom: 12 }}>
+      <Card size="md">
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <View>
+            <Text style={{ fontSize: 18, fontWeight: "600" }}>{name}</Text>
+            <Text style={{ color: "#6B7280" }}>{`${time} min - $${price}`}</Text>
+          </View>
 
-        <View className = "flex flex-row items-center">
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             {isDeal && (
-                <Text className="text-green-600 font-bold ml-2">Deal</Text>
+              <Text style={{ color: "#16A34A", fontWeight: "bold", marginLeft: 8 }}>Deal</Text>
             )}
             <TouchableOpacity
-                onPress = {onAdd}
-                className="w-8 h-8 rounded-full border border-black flex items-center justify-center"
+              onPress={onAdd}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: "black",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-                <Text className="text-xl font-bold">+</Text>
+              <Text style={{ fontSize: 20, fontWeight: "bold", lineHeight: 21 }}>+</Text>
             </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 }

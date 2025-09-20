@@ -8,10 +8,12 @@ export default function BookingPage() {
   const dealServices = services.services.filter((s) => s.isDeal);
 
   return (
-    <ScrollView className="p-4">
+    <ScrollView style={{ padding: 16 }}>
       {/*Regular*/}
-      <View className="mb-6">
-        <Text className="text-xl font-bold mb-4">Bookings</Text>
+      <View style={{ marginBottom: 24 }}>
+        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+          Bookings
+        </Text>
         {regularServices.map((service) => (
           <ServiceCard
             key={service.id}
@@ -25,7 +27,9 @@ export default function BookingPage() {
 
       {/*Deals*/}
       <View>
-        <Text className="text-xl font-bold mb-4">Deals</Text>
+        <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+          Deals
+        </Text>
         {dealServices.map((service) => (
           <ServiceCard
             key={service.id}
