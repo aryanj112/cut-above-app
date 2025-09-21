@@ -5,8 +5,8 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
-import { ScrollView } from 'react-native';
-
+import { ScrollView, View } from 'react-native';
+import MessageButton from "@/components/MessageButton";
 
 export default function Home() {
   const router = useRouter();
@@ -37,7 +37,6 @@ export default function Home() {
           >
             <ButtonText>Explore Tab Navigation</ButtonText>
           </Button>
-
         </Box>
         <Box className="flex-1 justify-center items-center h-[20px] w-[300px] lg:h-[160px] lg:w-[400px]">
           <Logo />
