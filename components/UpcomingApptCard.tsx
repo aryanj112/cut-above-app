@@ -19,8 +19,8 @@ export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCard
       </Heading>
       <Text size="md" className="text-center">Barber: {barber}</Text>
       <Text size="md" className="text-center">Cut: {cut}</Text>
-      <Button className="m-2 py-2 px-4 w-2/4 self-center bg-red-600">
-        <ButtonText size="lg">Cancel</ButtonText>
+      <Button className="m-2 py-2 px-4 bg-red-600">
+        <ButtonText>Cancel</ButtonText>
       </Button>
     </Card>
   );
