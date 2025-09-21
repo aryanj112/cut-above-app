@@ -12,31 +12,22 @@ type ServiceCardProps = {
 
 export function ServiceCard({ name, price, time, isDeal, onAdd }: ServiceCardProps) {
   return (
-    <View style={{ marginBottom: 12 }}>
+    // TODO: get rid of mb here and add in the margin where the prop is being called (helps with future reuse and side effects)
+    <View className="mb-[1rem]">
       <Card size="md">
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <View className="flex flex-row justify-between items-center">
           <View>
-            <Text style={{ fontSize: 18, fontWeight: "600" }}>{name}</Text>
-            <Text style={{ color: "#6B7280" }}>{`${time} min - $${price}`}</Text>
+            <Text className="text-[1.25rem] font-semibold">{name}</Text>
+            <Text className="text-gray-500">{`${time} min - $${price}`}</Text>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {isDeal && (
-              <Text style={{ color: "#16A34A", fontWeight: "bold", marginLeft: 8 }}>Deal</Text>
-            )}
+          <View className="flex flex-row items-center">
+            {isDeal && (<Text className="text-green-600 font-bold ml-2">Deal</Text>)}
             <TouchableOpacity
+              className="w-8 h-8 rounded-full border border-black flex justify-center items-center"
               onPress={onAdd}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: "black",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
             >
-              <Text style={{ fontSize: 20, fontWeight: "bold", lineHeight: 21 }}>+</Text>
+              <Text className="text-xl font-bold leading-[21px]">+</Text>
             </TouchableOpacity>
           </View>
         </View>
