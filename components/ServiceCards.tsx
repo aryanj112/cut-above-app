@@ -14,7 +14,7 @@ export function ServiceCard({ name, price, time, isDeal, onAdd }: ServiceCardPro
   return (
     // TODO: get rid of mb here and add in the margin where the prop is being called (helps with future reuse and side effects)
     <View className="mb-[1rem]">
-      <Card size="md">
+      <Card size="lg">
         <View className="flex flex-row justify-between items-center">
           <View>
             <Text className="text-[1.25rem] font-semibold">{name}</Text>
