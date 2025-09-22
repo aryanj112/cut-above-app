@@ -19,10 +19,7 @@ type UpcomingApptCardProps = {
 export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCardProps) {
   const [showModal, setShowModal] = useState(false);
 
-  // Assuming date comes as an ISO string of format "2025-09-21T19:30:00.000Z"
-  const dateObj = new Date(date);
-
-  // Format into "September 21, 2025 at 3:30 PM"
+  // Format into a date like "September 21, 2025 at 3:30 PM"
   const formattedDate = new Date(date).toLocaleString("en-US", {
     month: "long",
     day: "numeric",
@@ -41,7 +38,7 @@ export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCard
       <Button className="m-2 py-2 px-4 bg-red-600" onPress={() => setShowModal(!showModal)}>
         <ButtonText size="lg">Cancel</ButtonText>
       </Button>
-      {showModal && <CancelModal showModal={showModal} setShowModal={setShowModal} date={date} />}
+      {showModal && <CancelModal showModal={showModal} setShowModal={setShowModal} date={date} formattedDate={formattedDate} />}
     </Card>
   );
 }

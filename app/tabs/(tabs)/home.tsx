@@ -13,7 +13,7 @@ export default function HomePage() {
         />
         <Text className="p-4">Upcoming Appointments</Text>
         <UpcomingApptCard
-          date="2025-09-21T19:30:00.000Z"
+          date="2025-09-23T21:30:00.000Z"
           barber="Vince"
           cut="Adult Hair Cut"
         />
