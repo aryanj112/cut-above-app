@@ -72,7 +72,7 @@ export default function Home() {
               Premium barbershop experience awaits
             </Text>
           </Box>
-
+          
           {/* Sign In Card */}
           <Box 
             className={`w-full max-w-sm rounded-3xl p-8 ${
@@ -87,6 +87,11 @@ export default function Home() {
               shadowOpacity: isDark ? 0.3 : 0.1,
               shadowRadius: 30,
               elevation: 15,
+          <Button
+            size="md"
+            className="bg-primary-500 px-6 py-2 rounded-full"
+            onPress={() => {
+              router.push('/tabs/home');
             }}
           >
             <Text className={`text-2xl font-bold mb-8 text-center ${
