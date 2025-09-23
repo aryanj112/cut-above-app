@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
-import MessageButton from "@/components/MessageButton";
+
 
 export default function Home() {
   const router = useRouter();
