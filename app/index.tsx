@@ -10,6 +10,7 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
+import { ScrollView, View } from 'react-native';
 import { Image, TouchableOpacity, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -89,7 +90,8 @@ export default function Home() {
             <Text className="text-white font-bold">Go Home</Text>
           </Button>
         </Box>
-
+        <Box className="flex-1 justify-center items-center h-[20px] w-[300px] lg:h-[160px] lg:w-[400px]">
+          <Logo />
         <Box className="h-8" />
       </Box>
     </Box >
