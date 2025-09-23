@@ -90,10 +90,7 @@ export default function Home() {
             <Text className="text-white font-bold">Go Home</Text>
           </Button>
         </Box>
-        <Box className="flex-1 justify-center items-center h-[20px] w-[300px] lg:h-[160px] lg:w-[400px]">
-          <Logo />
-        <Box className="h-8" />
-      </Box>
+      </Box >
     </Box >
   );
 }

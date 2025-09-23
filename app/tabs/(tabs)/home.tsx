@@ -1,4 +1,4 @@
-import { Text, Image, ScrollView } from "react-native";
+import { Text, Image, View } from "react-native";
 import UpcomingApptCard from '@/components/UpcomingApptCard';
 import { Button } from "@/components/ui/button";
 import { router } from "expo-router";
@@ -6,24 +6,19 @@ import MessageButton from "@/components/MessageButton";
 
 export default function HomePage() {
   return (
-    <ScrollView
-      contentContainerStyle={{
-        alignItems: 'center',
-        paddingVertical: 24,
-        paddingBottom: 120, 
-        rowGap: 16,        
-      }}
-    >
-      <Image
-        style={{ width: 320, height: 320 }}
-        source={require('../../../assets/images/logo.png')}
-      />
-      <Text style={{ padding: 16 }}>Upcoming Appointments</Text>
-      <UpcomingApptCard
-        date="September 20, 2025 at 3:00 pm"
-        barber="Vince"
-        cut="Adult Hair Cut"
-      />
+    <View className="flex-1 justify-between items-center">
+      <View className="items-center">
+        <Image
+          className="w-[10rem] h-[10rem] mt-[2rem]"
+          source={require('../../../assets/images/logo.png')}
+        />
+        <Text className="p-4">Upcoming Appointments</Text>
+        <UpcomingApptCard
+          date="2025-09-23T21:30:00.000Z"
+          barber="Vince"
+          cut="Adult Hair Cut"
+        />
+      </View>
       <Button
         className="w-[10rem] h-[4rem] mb-8"
         onPress={() => {
@@ -33,6 +28,6 @@ export default function HomePage() {
         <Text className="text-white font-bold text-xl">Book Now</Text>
       </Button>
       <MessageButton />
-    </ScrollView>
+    </View>
   );
 }

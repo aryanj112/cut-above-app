@@ -7,6 +7,7 @@ import { useState } from "react";
 import * as Linking from "expo-linking";
 import { ActionSheetIOS, Platform, Pressable, Modal, View } from "react-native";
 import { PhoneIcon } from "@/components/ui/icon";
+import { TbMessageCircle } from "react-icons/tb";
 
 export default function MessageButton() {
     const [open, setOpen] = useState(false);
@@ -14,39 +15,40 @@ export default function MessageButton() {
     //options to call or text
     const callUrl = `tel:${phone}`;
     const smsUrl = Platform.select({
-        ios: `sms:${phone}`,                       
-        android: `sms:${phone}?body=Hey`,   
-        default: `sms:${phone}`,                   
+        ios: `sms:${phone}`,
+        android: `sms:${phone}?body=Hey`,
+        default: `sms:${phone}`,
     })!;
     // opens url for call/text and then closes modal
     const openURL = async (url: string) => {
-    try {
-      if (await Linking.canOpenURL(url)) await Linking.openURL(url);
-    } finally {
-      setOpen(false);
-    }
-  };
+        try {
+            if (await Linking.canOpenURL(url)) await Linking.openURL(url);
+        } finally {
+            setOpen(false);
+        }
+    };
 
-  return (
+    return (
         <>
             <Box className="absolute bottom-16 right-6 z-50">
-                <Pressable //blue circular button
+                <Pressable
                     onPress={() => setOpen(true)}
                     style={{
-                        width: 56,
-                        height: 56,
+                        width: 45,
+                        height: 45,
                         borderRadius: 28,
-                        backgroundColor: "#2563eb", 
+                        backgroundColor: "transparent",
                         alignItems: "center",
                         justifyContent: "center",
                         shadowColor: "#000",
                         shadowOpacity: 0.25,
                         shadowRadius: 8,
                         shadowOffset: { width: 0, height: 4 },
-                        elevation: 6, 
+                        elevation: 6,
                     }}
-                > 
-                    <PhoneIcon className="text-white h-6 w-6" /> 
+                >
+                    {/* <TbMessageCircle className="text-white h-6 w-6" /> */}
+                    <PhoneIcon className="text-white h-2 w-2" />
                 </Pressable>
             </Box>
             <Modal
@@ -60,7 +62,7 @@ export default function MessageButton() {
                     onPress={() => setOpen(false)}
                 >
                     <Pressable
-                        onPress={() => {}} // modal card
+                        onPress={() => { }} // modal card
                         style={{
                             position: "absolute",
                             left: 16,
@@ -70,7 +72,7 @@ export default function MessageButton() {
                             borderRadius: 14,
                             overflow: "hidden",
                         }}
-                    > 
+                    >
                         <View style={{ paddingTop: 16, paddingBottom: 8, alignItems: "center" }}>
                             <Text className="text-base font-medium">Contact Vince</Text>
                         </View>
@@ -88,7 +90,7 @@ export default function MessageButton() {
                         >
                             <Text className="text-base">Call Us</Text>
                         </Pressable>
-                     </Pressable>
+                    </Pressable>
                 </Pressable>
             </Modal>
         </>

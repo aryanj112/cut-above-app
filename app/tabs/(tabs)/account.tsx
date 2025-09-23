@@ -12,10 +12,10 @@ type Info = {
 export default function AccountPage() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [info, setInfo] = useState<Info>({
-  name: "",
-  phone: "",
-  email: "",
-  birthday: "",
+    name: "",
+    phone: "",
+    email: "",
+    birthday: "",
   });
   const [draftInfo, setDraftInfo] = useState<Info>(info);
   const [modalTitle, setModalTitle] = useState<string | null>(null);
@@ -29,12 +29,12 @@ export default function AccountPage() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1,1],
-      quality:0.9,
+      aspect: [1, 1],
+      quality: 0.9,
     });
     if (!result.canceled) setPhotoUri(result.assets[0].uri);
   };
-  const ButtonBlock = ({ label, onPress }:{label: string; onPress: () => void}) => (
+  const ButtonBlock = ({ label, onPress }: { label: string; onPress: () => void }) => (
     <TouchableOpacity
       onPress={onPress}
       className="bg-gray-900 rounded-xl px-5 py-4 mb-3 active:opacity-90"
@@ -43,14 +43,14 @@ export default function AccountPage() {
     </TouchableOpacity>
   );
   return (
-    <View className = "flex-1">
+    <View className="flex-1">
       <KeyboardAvoidingView
         behavior=
         {Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 140 }} 
+          contentContainerStyle={{ paddingBottom: 140 }}
           className="px-5 pt-5"
         >
           <View className="flex-row items-center justify-between mb-3">
@@ -92,7 +92,7 @@ export default function AccountPage() {
           onPress={() => setModalTitle(null)}
         >
           <Pressable
-            onPress={() => {}}
+            onPress={() => { }}
             className="m-auto w-11/12 bg-white rounded-2xl p-5"
           >
             <Text className="text-lg font-bold mb-2">{modalTitle}</Text>
@@ -119,7 +119,7 @@ export default function AccountPage() {
           onPress={() => setShowAccountInfo(false)}
         >
           <Pressable
-            onPress={() => {}}
+            onPress={() => { }}
             className="m-auto w-11/12 bg-white rounded-2xl p-5"
           >
             <Text className="text-lg font-bold mb-2">Edit Account Information</Text>
@@ -145,8 +145,8 @@ export default function AccountPage() {
                     key === "phone"
                       ? "phone-pad"
                       : key === "email"
-                      ? "email-address"
-                      : "default"
+                        ? "email-address"
+                        : "default"
                   }
                   autoCapitalize={key === "email" ? "none" : "words"}
                 />
