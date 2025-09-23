@@ -27,7 +27,7 @@ export function ServiceCard({ name, price, time, isDeal, onAdd }: ServiceCardPro
               className="w-8 h-8 rounded-full border border-black flex justify-center items-center"
               onPress={onAdd}
             >
-              <Text className="text-xl font-bold leading-[21px]">+</Text>
+              <Text className="text-xl font-bold text-center leading-[18.5px]">+</Text>
             </TouchableOpacity>
           </View>
         </View>
