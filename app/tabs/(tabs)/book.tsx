@@ -1,7 +1,9 @@
-import { Text, View, Dimensions, ScrollView } from "react-native";
+import { Text, View, Dimensions, ScrollView, Pressable } from "react-native";
 import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { ButtonText } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 
 const { width } = Dimensions.get("window");
 
@@ -13,12 +15,12 @@ export default function BookPage() {
             <View className="items-center">
                 <BookCalendar day={day} setDay={setDay} />
             </View>
-            {day && <Timings />}
+            <Timings day={day} />
         </ScrollView>
     );
 }
 
-const Timings = () => {
+const Timings = ({ day }: { day: string }) => {
     const timeData = [
         {
             section: "Morning",
@@ -58,21 +60,30 @@ const Timings = () => {
     ];
     const TimeSlot = ({ time }: { time: string }) => {
         return (
-            <Card size="lg" className="bg-white rounded-xl px-4 py-3">
-                <Text className="text-black text-base font-semibold"> {time} </Text>
-            </Card>
+            <Button
+                size="lg"
+                variant="solid"
+                className="bg-white rounded-xl"
+                onPress={() => console.log(day.concat(" ", time))}
+            >
+                <ButtonText className="text-black font-semibold">{time}</ButtonText>
+            </Button>
         );
     }
 
     const TimeSection = ({ timeSection, times }: { timeSection: string, times: string[] }) => {
         return (
             <>
-                <Text className="text-[1.5rem] font-bold mb-[1rem]">{timeSection}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16 }} className="mb-[1rem]">
-                    {times.map((time, index) => (
-                        <TimeSlot key={index} time={time} />
-                    ))}
-                </ScrollView>
+                {day && (
+                    <>
+                        <Text className="text-[1.5rem] font-bold mb-[1rem]">{timeSection}</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 16 }} className="mb-[1rem]">
+                            {times.map((time, index) => (
+                                <TimeSlot key={index} time={time} />
+                            ))}
+                        </ScrollView>
+                    </>
+                )}
             </>
         );
     }
