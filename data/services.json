@@ -43,20 +43,6 @@
       "isDeal": false
     },
     {
-      "id": "7",
-      "name": "Before & After Hours Cut",
-      "price": 50,
-      "timeMin": 15,
-      "isDeal": false
-    },
-    {
-      "id": "8",
-      "name": "New Client Hair Cut",
-      "price": 35,
-      "timeMin": 15,
-      "isDeal": false
-    },
-    {
       "id": "p1",
       "name": "Adult Cut + Beard Trim",
       "price": 35,
