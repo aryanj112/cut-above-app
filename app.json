@@ -14,9 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.projectlift.onecutabove",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.projectlift.onecutabove",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -34,6 +36,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "28c80b04-2950-461c-8e18-be22d104d8f7"
+      }
     }
   }
 }
