@@ -12,21 +12,44 @@ import { supabase } from "../../../lib/supabase";
 export default function BookingPage() {
 	const [isCartExpanded, setIsCartExpanded] = useState(true);
 	const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
-	const regularServices: Service[] = services.services.filter((s) => !s.isDeal);
+	const [regularServices, setRegularServices] = useState<Service[]>([]);
 	const dealServices: Service[] = services.services.filter((s) => s.isDeal);
 	const cart = useCart();
 
 	// useEffect to call Supabase edge function
 	useEffect(() => {
 		const callEdgeFunction = async () => {
-			const { data, error } = await supabase.functions.invoke(
-				"get-services",
-			);
+			const { data, error } = await supabase.functions.invoke("get-services");
 
 			if (error) {
 				console.error("Error calling edge function:", error);
 			} else {
-				console.log("Edge function response:", data);
+				// console.log("Edge function response:", data);
+
+				// Map Square API service data to your Service type
+				const mappedServices: Service[] =
+					data.objects
+						?.map((squareItem: any) => {
+							const itemData = squareItem.item_data;
+							return {
+								id: squareItem.id,
+								name: itemData?.name || "Unknown Service",
+								price: itemData?.variations?.[0]?.item_variation_data
+									?.price_money?.amount
+									? itemData.variations[0].item_variation_data.price_money
+											.amount / 100
+									: 0, // Convert cents to dollars
+								timeMin: itemData?.service_duration
+									? Math.round(itemData.service_duration / 60)
+									: 15, // Convert seconds to minutes
+								isDeal: itemData?.is_deal || false, // Check if it's marked as a deal
+							};
+						})
+						.filter((service: Service) => service.name !== "Unknown Service") ||
+					[];
+
+				// console.log("Mapped services:", mappedServices);
+				setRegularServices(mappedServices);
 			}
 		};
 
@@ -102,7 +125,7 @@ export default function BookingPage() {
 				{/* Regular Services */}
 				<View className="mb-[1.5rem]">
 					<Text className="mb-[1.5rem] text-[2rem] font-bold">Bookings</Text>
-					{regularServices.map((service) => (
+					{regularServices?.map((service) => (
 						<ServiceCard
 							key={service.id}
 							service={service}
