@@ -63,7 +63,7 @@ export default function TabLayout() {
 						),
 					}}
 				/>
-				<Tabs.Screen
+				{/* <Tabs.Screen
 					name="book"
 					options={{
 						title: "Book",
@@ -75,7 +75,7 @@ export default function TabLayout() {
 							/>
 						),
 					}}
-				/>
+				/> */}
 			</Tabs>
 		</ProtectedRoute>
 	);
