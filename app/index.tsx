@@ -29,13 +29,6 @@ export default function Home() {
 		}
 	}, [session, loading, router]);
 
-	const handleGoogleSignIn = () => {
-		// Placeholder for Google sign-in logic
-		console.log("Google sign-in pressed");
-		// For now, navigate to placeholder route
-		router.push("/");
-	};
-
 	// Show loading state while checking authentication
 	if (loading) {
 		return (
@@ -84,34 +77,14 @@ export default function Home() {
 					}`}
 				>
 					<Text
-						className={`text-2xl font-bold mb-8 text-center ${
+						className={`text-2xl font-bold text-center ${
 							isDark ? "text-white" : "text-gray-900"
 						}`}
 					>
-						Welcome Back
+						Welcome
 					</Text>
 
 					<Auth />
-
-					<TouchableOpacity
-						onPress={handleGoogleSignIn}
-						className={`w-full rounded-2xl py-5 px-6 flex-row items-center justify-center mb-6 shadow-lg ${
-							isDark
-								? "bg-white/10 border border-white/20"
-								: "bg-white border border-gray-200/50"
-						}`}
-					>
-						<Box className="w-6 h-6 mr-4">
-							<Ionicons name="logo-google" size={20} color="#4285F4" />
-						</Box>
-						<Text
-							className={`font-semibold text-base ${
-								isDark ? "text-white" : "text-gray-900"
-							}`}
-						>
-							Continue with Google
-						</Text>
-					</TouchableOpacity>
 				</Box>
 			</Box>
 		</Box>

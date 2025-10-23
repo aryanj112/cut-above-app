@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "starterkitexpo",
+    "scheme": "com.projectlift",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
