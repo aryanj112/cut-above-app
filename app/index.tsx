@@ -25,7 +25,7 @@ export default function Home() {
 	// Redirect to home if user is already authenticated
 	useEffect(() => {
 		if (session && !loading) {
-			router.push("/tabs/home");
+			router.replace("/tabs/home?new=1");
 		}
 	}, [session, loading, router]);
 
