@@ -63,19 +63,6 @@ export default function TabLayout() {
 						),
 					}}
 				/>
-				<Tabs.Screen
-					name="book"
-					options={{
-						title: "Book",
-						tabBarIcon: ({ color, size }) => (
-							<Image
-								source={require("../../../assets/images/account-icon.png")}
-								style={{ width: size, height: size, tintColor: color }}
-								resizeMode="contain"
-							/>
-						),
-					}}
-				/>
 			</Tabs>
 		</ProtectedRoute>
 	);
