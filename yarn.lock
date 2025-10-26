@@ -3142,6 +3142,11 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
+"@stripe/stripe-react-native@^0.54.1":
+  version "0.54.1"
+  resolved "https://registry.npmjs.org/@stripe/stripe-react-native/-/stripe-react-native-0.54.1.tgz"
+  integrity sha512-dtK4OohFr6/xwmnkJCfrQbxWl2dEyGs4kIXNSVxfl8uLVJ7P71wgFDl7Kdp3xEzd7zLcPToPrRFYtPZu/ud5nQ==
+
 "@supabase/auth-js@2.75.0":
   version "2.75.0"
   resolved "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.75.0.tgz"
