@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Animated, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CartItem } from "../../app/types";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 type CartSummaryProps = {
   cartItems: CartItem[];
@@ -21,6 +23,7 @@ export function CartSummary({
   const [isExpanded, setIsExpanded] = useState(true);
   const [animation] = useState(new Animated.Value(1));
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   
   // Calculate the height needed for the cart content
   const collapsedHeight = 60;
@@ -64,23 +67,43 @@ export function CartSummary({
       style={{ 
         height: cartHeight,
         position: 'absolute',
-        bottom: 0, // Attach directly to the bottom (tab bar level)
+        bottom: 0,
         left: 0,
         right: 0,
+        backgroundColor: colors.card,
+        borderTopWidth: 2,
+        borderTopColor: colors.primary,
+        shadowColor: colors.cardShadow,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 8,
       }}
-      className="bg-white border-t border-gray-200 shadow-lg"
     >
       {/* Toggle Handle */}
       <TouchableOpacity 
-        className="flex-row justify-center items-center py-3 border-b border-gray-100"
+        style={{ 
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingVertical: 14,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.primaryMuted,
+        }}
         onPress={toggleCart}
+        activeOpacity={0.8}
       >
-        <View className="flex-row items-center">
-          <Text className="font-bold text-lg mr-2">
-            Cart ({cartItems.length} item{cartItems.length !== 1 ? 's' : ''}) • ${getTotalPrice()}
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="cart" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+          <Text style={{ fontWeight: '700', fontSize: 17, marginRight: 8, color: colors.text }}>
+            Cart ({cartItems.length})
           </Text>
-          <Animated.View style={{ transform: [{ rotate: handleRotation }] }}>
-            <Text className="text-lg font-bold">⌄</Text>
+          <Text style={{ fontSize: 17, fontWeight: '700', color: colors.primary }}>
+            ${getTotalPrice()}
+          </Text>
+          <Animated.View style={{ transform: [{ rotate: handleRotation }], marginLeft: 8 }}>
+            <Ionicons name="chevron-down" size={20} color={colors.text} />
           </Animated.View>
         </View>
       </TouchableOpacity>
@@ -91,40 +114,80 @@ export function CartSummary({
           opacity: contentOpacity,
           flex: 1,
         }}
-        className="px-4 pb-4"
       >
         <ScrollView 
           showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
+          style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}
         >
-          <View className="mb-2">
-            <Text className="text-base font-bold mb-1">Cart Details</Text>
-            {cartItems.map((item) => (
-              <View key={item.service.id} className="flex-row justify-between items-center mb-1">
-                <Text className="flex-1 text-sm">{item.service.name}</Text>
-                <Text className="text-sm font-medium mx-2">x{item.quantity}</Text>
-                <Text className="text-sm font-bold">${item.service.price * item.quantity}</Text>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', marginBottom: 12, color: colors.text }}>
+              Cart Details
+            </Text>
+            {cartItems.map((item, index) => (
+              <View 
+                key={item.service.id} 
+                style={{ 
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingVertical: 8,
+                  borderBottomWidth: index < cartItems.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.borderLight,
+                }}
+              >
+                <Text style={{ flex: 1, fontSize: 14, color: colors.text }}>{item.service.name}</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', marginHorizontal: 8, color: colors.textSecondary }}>
+                  ×{item.quantity}
+                </Text>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.primary }}>
+                  ${item.service.price * item.quantity}
+                </Text>
               </View>
             ))}
           </View>
         </ScrollView>
         
         {/* Footer section - always visible at bottom of expanded cart */}
-        <View className="border-t border-gray-300 pt-2">
-          <View className="flex-row justify-between items-center mb-1">
-            <Text className="font-bold">Total Time:</Text>
-            <Text className="font-bold">{getTotalTime()} min</Text>
+        <View 
+          style={{ 
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+            paddingTop: 12,
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            backgroundColor: colors.card,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
+              <Text style={{ fontWeight: '600', marginLeft: 4, color: colors.text }}>Total Time:</Text>
+            </View>
+            <Text style={{ fontWeight: '700', color: colors.text }}>{getTotalTime()} min</Text>
           </View>
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="font-bold text-lg">Total Price:</Text>
-            <Text className="font-bold text-lg">${getTotalPrice()}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ fontWeight: '700', fontSize: 18, color: colors.text }}>Total Price:</Text>
+            <Text style={{ fontWeight: '700', fontSize: 20, color: colors.primary }}>${getTotalPrice()}</Text>
           </View>
           
           <TouchableOpacity 
-            className="bg-blue-600 rounded-lg py-2 px-4"
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              paddingVertical: 14,
+              paddingHorizontal: 16,
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 4,
+            }}
             onPress={onBookAppointment}
+            activeOpacity={0.8}
           >
-            <Text className="text-white text-center font-bold">Book Appointment</Text>
+            <Text style={{ color: '#ffffff', textAlign: 'center', fontWeight: '700', fontSize: 16 }}>
+              Book Appointment
+            </Text>
           </TouchableOpacity>
         </View>
       </Animated.View>

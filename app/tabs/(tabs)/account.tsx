@@ -20,6 +20,8 @@ import MessageButton from "@/components/MessageButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useFocusEffect } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -63,6 +65,7 @@ const isoToUS = (s: string) => {
 export default function AccountPage() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const { session, loading, signOut } = useAuth();
+  const { colors, colorMode, toggleColorMode } = useTheme();
 
   const [info, setInfo] = useState<Info>({
     name: "",
@@ -229,15 +232,37 @@ export default function AccountPage() {
   const ButtonBlock = ({
     label,
     onPress,
+    danger = false,
   }: {
     label: string;
     onPress: () => void;
+    danger?: boolean;
   }) => (
     <TouchableOpacity
       onPress={onPress}
-      className="bg-gray-900 rounded-xl px-5 py-4 mb-3 active:opacity-90"
+      style={{
+        backgroundColor: danger ? colors.errorMuted : colors.card,
+        borderRadius: 12,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: danger ? colors.error : colors.border,
+        shadowColor: colors.cardShadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+      }}
+      activeOpacity={0.7}
     >
-      <Text className="text-white text-base font-semibold">{label}</Text>
+      <Text style={{ 
+        color: danger ? colors.error : colors.text, 
+        fontSize: 16, 
+        fontWeight: '600' 
+      }}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -341,32 +366,121 @@ export default function AccountPage() {
   };
 
   return (
-    <View className="flex-1">
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Header with Theme Toggle */}
+      <View 
+        style={{ 
+          paddingTop: 60,
+          paddingHorizontal: 20,
+          paddingBottom: 20,
+          backgroundColor: colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text }}>
+            Account
+          </Text>
+          <TouchableOpacity
+            onPress={toggleColorMode}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: colors.backgroundSecondary,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Ionicons 
+              name={colorMode === 'dark' ? 'sunny' : 'moon'} 
+              size={22} 
+              color={colors.text} 
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ paddingBottom: 140 }}
-          className="px-5 pt-5"
+          style={{ paddingHorizontal: 20, paddingTop: 20 }}
         >
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-2xl font-bold">
-              Welcome {info.name || "Guest"}
-            </Text>
-            <TouchableOpacity onPress={pickImage} activeOpacity={0.85}>
-              {photoUri ? (
-                <Image
-                  source={{ uri: photoUri }}
-                  className="w-16 h-16 rounded-full border border-gray-200"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-16 h-16 rounded-full bg-gray-200 items-center justify-center border border-gray-200">
-                  <Text className="text-xl text-gray-500">👤</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+          {/* Profile Card */}
+          <View 
+            style={{ 
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 24,
+              borderWidth: 1,
+              borderColor: colors.border,
+              shadowColor: colors.cardShadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 3,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity onPress={pickImage} activeOpacity={0.85}>
+                {photoUri ? (
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: 40,
+                      borderWidth: 3,
+                      borderColor: colors.primary,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View 
+                    style={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: 40, 
+                      backgroundColor: colors.primaryMuted,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderWidth: 3,
+                      borderColor: colors.primary,
+                    }}
+                  >
+                    <Ionicons name="person" size={40} color={colors.primary} />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>
+                  {info.name || "Guest"}
+                </Text>
+                <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4 }}>
+                  {info.email || "No email"}
+                </Text>
+                <TouchableOpacity 
+                  onPress={pickImage}
+                  style={{ 
+                    marginTop: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Ionicons name="camera" size={16} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontSize: 14, marginLeft: 4, fontWeight: '600' }}>
+                    Change Photo
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
 
           <ButtonBlock
@@ -391,6 +505,7 @@ export default function AccountPage() {
           <ButtonBlock
             label="Delete Account"
             onPress={() => setShowDeleteModal(true)}
+            danger
           />
           <ButtonBlock
             label="Sign Out"
@@ -411,15 +526,37 @@ export default function AccountPage() {
         animationType="fade"
         onRequestClose={() => setModalTitle(null)}
       >
-        <Pressable className="flex-1 bg-black/40" onPress={() => setModalTitle(null)}>
-          <Pressable onPress={() => {}} className="m-auto w-11/12 bg-white rounded-2xl p-5">
-            <Text className="text-lg font-bold mb-2">{modalTitle}</Text>
-            <Text className="text-base text-gray-700">This feature isn't ready yet.</Text>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setModalTitle(null)}>
+          <Pressable 
+            onPress={() => {}} 
+            style={{ 
+              margin: 'auto',
+              width: '85%',
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: colors.text }}>
+              {modalTitle}
+            </Text>
+            <Text style={{ fontSize: 16, color: colors.textSecondary }}>
+              This feature isn't ready yet.
+            </Text>
             <TouchableOpacity
               onPress={() => setModalTitle(null)}
-              className="self-end mt-4 bg-gray-900 px-4 py-2 rounded-xl"
+              style={{
+                alignSelf: 'flex-end',
+                marginTop: 16,
+                backgroundColor: colors.primary,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 12,
+              }}
             >
-              <Text className="text-white font-semibold">Close</Text>
+              <Text style={{ color: '#ffffff', fontWeight: '600' }}>Close</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>
@@ -432,52 +569,100 @@ export default function AccountPage() {
         animationType="fade"
         onRequestClose={() => setShowAccountInfo(false)}
       >
-        <Pressable className="flex-1 bg-black/40" onPress={() => setShowAccountInfo(false)}>
-          <Pressable onPress={() => {}} className="m-auto w-11/12 bg-white rounded-2xl p-5">
-            <Text className="text-lg font-bold mb-2">Edit Account Information</Text>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setShowAccountInfo(false)}>
+          <Pressable 
+            onPress={() => {}} 
+            style={{ 
+              margin: 'auto',
+              width: '90%',
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: colors.text }}>
+              Edit Account Information
+            </Text>
 
             {/* Name */}
-            <View className="bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-3">
-              <Text className="text-[12px] text-gray-500 mb-1">Name</Text>
+            <View style={{ 
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              marginBottom: 12,
+            }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Name</Text>
               <TextInput
                 value={draftInfo.name}
                 onChangeText={(t) => setDraftInfo((p) => ({ ...p, name: t }))}
                 placeholder="Enter name"
-                className="text-base"
+                placeholderTextColor={colors.textMuted}
+                style={{ fontSize: 16, color: colors.text }}
                 autoCapitalize="words"
               />
             </View>
             {/* Phone */}
-            <View className="bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-3">
-              <Text className="text-[12px] text-gray-500 mb-1">Phone Number</Text>
+            <View style={{ 
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              marginBottom: 12,
+            }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Phone Number</Text>
               <TextInput
                 value={draftInfo.phone}
                 onChangeText={(t) => setDraftInfo((p) => ({ ...p, phone: t }))}
                 placeholder="Enter phone"
+                placeholderTextColor={colors.textMuted}
                 keyboardType="phone-pad"
-                className="text-base"
+                style={{ fontSize: 16, color: colors.text }}
               />
             </View>
        
-            <View className="bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-3">
-              <Text className="text-[12px] text-gray-500 mb-1">Email</Text>
+            <View style={{ 
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              marginBottom: 12,
+            }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Email</Text>
               <TextInput
                 value={draftInfo.email}
                 onChangeText={(t) => setDraftInfo((p) => ({ ...p, email: t }))}
                 placeholder="Enter email"
+                placeholderTextColor={colors.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className="text-base"
+                style={{ fontSize: 16, color: colors.text }}
               />
             </View>
      
             <TouchableOpacity
               onPress={() => setAccountBdayPickerVisible(true)}
               activeOpacity={0.85}
-              className="bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-3"
+              style={{ 
+                backgroundColor: colors.background,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                marginBottom: 12,
+              }}
             >
-              <Text className="text-[12px] text-gray-500 mb-1">Birthday</Text>
-              <Text className="text-base">
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Birthday</Text>
+              <Text style={{ fontSize: 16, color: colors.text }}>
                 {draftInfo.birthday ? draftInfo.birthday : "Select date"}
               </Text>
             </TouchableOpacity>
@@ -493,20 +678,31 @@ export default function AccountPage() {
               onCancel={() => setAccountBdayPickerVisible(false)}
             />
 
-            <View className="flex-row justify-end mt-4">
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
               <TouchableOpacity
                 onPress={() => setShowAccountInfo(false)}
-                className="bg-gray-200 px-4 py-2 rounded-xl mr-2"
+                style={{
+                  backgroundColor: colors.backgroundSecondary,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 12,
+                  marginRight: 8,
+                }}
               >
-                <Text className="text-gray-900 font-semibold">Close</Text>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>Close</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleSave}
                 disabled={saving}
-                className="bg-gray-900 px-4 py-2 rounded-xl"
+                style={{
+                  backgroundColor: colors.primary,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 12,
+                }}
               >
-                <Text className="text-white font-semibold">
+                <Text style={{ color: '#ffffff', fontWeight: '600' }}>
                   {saving ? "Saving…" : "Save"}
                 </Text>
               </TouchableOpacity>
@@ -522,35 +718,68 @@ export default function AccountPage() {
         animationType="fade"
         onRequestClose={() => setShowDeleteModal(false)}
       >
-        <Pressable className="flex-1 bg-black/40" onPress={() => setShowDeleteModal(false)}>
-          <Pressable onPress={() => {}} className="m-auto w-11/12 bg-white rounded-2xl p-5">
-            <Text className="text-lg font-bold mb-2">Delete Account</Text>
-            <Text className="text-base text-gray-700 mb-3">
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setShowDeleteModal(false)}>
+          <Pressable 
+            onPress={() => {}} 
+            style={{ 
+              margin: 'auto',
+              width: '85%',
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 8, color: colors.error }}>
+              Delete Account
+            </Text>
+            <Text style={{ fontSize: 15, color: colors.textSecondary, marginBottom: 12 }}>
               Are you sure you want to delete your account? This action cannot be undone. Please retype your preferred name below to confirm.
             </Text>
-            <View className="bg-white border border-gray-300 rounded-xl px-3.5 py-3 mb-3">
-              <Text className="text-[12px] text-gray-500 mb-1">Confirm Deletion</Text>
+            <View style={{ 
+              backgroundColor: colors.background,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              marginBottom: 12,
+            }}>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 4 }}>Confirm Deletion</Text>
               <TextInput
                 value={nameAck}
                 onChangeText={setNameAck}
                 placeholder="Type your preferred name"
+                placeholderTextColor={colors.textMuted}
                 autoCapitalize="words"
-                className="text-base"
+                style={{ fontSize: 16, color: colors.text }}
               />
             </View>
-            <View className="flex-row justify-end mt-2">
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
               <TouchableOpacity
                 onPress={() => setShowDeleteModal(false)}
-                className="bg-gray-200 px-4 py-2 rounded-xl mr-2"
+                style={{
+                  backgroundColor: colors.backgroundSecondary,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 12,
+                  marginRight: 8,
+                }}
               >
-                <Text className="text-gray-900 font-semibold">Cancel</Text>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleDeleteAccount}
                 disabled={deleting}
-                className="bg-red-600 px-4 py-2 rounded-xl"
+                style={{
+                  backgroundColor: colors.error,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 12,
+                }}
               >
-                <Text className="text-white font-semibold">
+                <Text style={{ color: '#ffffff', fontWeight: '600' }}>
                   {deleting ? "Deleting…" : "Delete"}
                 </Text>
               </TouchableOpacity>

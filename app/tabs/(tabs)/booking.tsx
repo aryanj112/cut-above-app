@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ScrollView, View, Text, Alert } from "react-native";
+import { ScrollView, View, Text, Alert, TouchableOpacity } from "react-native";
 import services from "../../../data/services.json";
 import { ServiceCard } from "../../../components/booking/ServiceCards";
 import { CartSummary } from "../../../components/booking/CartSummary";
@@ -8,6 +8,8 @@ import { useCart } from "../../hooks/useCart";
 import { Service } from "../../types";
 import { BookingFormData, Appointment } from "../../types/Appointment";
 import { supabase } from "../../../lib/supabase";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function BookingPage() {
 	const [isCartExpanded, setIsCartExpanded] = useState(true);
@@ -15,6 +17,7 @@ export default function BookingPage() {
 	const [regularServices, setRegularServices] = useState<Service[]>([]);
 	const dealServices: Service[] = services.services.filter((s) => s.isDeal);
 	const cart = useCart();
+	const { colors, colorMode, toggleColorMode } = useTheme();
 
 	// useEffect to call Supabase edge function
 	useEffect(() => {
@@ -114,17 +117,67 @@ export default function BookingPage() {
 		cart.cartItems.length > 0 ? cartHeight + 20 : 20;
 
 	return (
-		<View className="flex-1">
+		<View style={{ flex: 1, backgroundColor: colors.background }}>
+			{/* Header with Theme Toggle */}
+			<View 
+				style={{ 
+					paddingTop: 60,
+					paddingHorizontal: 20,
+					paddingBottom: 20,
+					backgroundColor: colors.background,
+					borderBottomWidth: 1,
+					borderBottomColor: colors.border,
+				}}
+			>
+				<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+					<Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text }}>
+						Book Services
+					</Text>
+					<TouchableOpacity
+						onPress={toggleColorMode}
+						style={{
+							width: 44,
+							height: 44,
+							borderRadius: 22,
+							backgroundColor: colors.backgroundSecondary,
+							justifyContent: 'center',
+							alignItems: 'center',
+							borderWidth: 1,
+							borderColor: colors.border,
+						}}
+					>
+						<Ionicons 
+							name={colorMode === 'dark' ? 'sunny' : 'moon'} 
+							size={22} 
+							color={colors.text} 
+						/>
+					</TouchableOpacity>
+				</View>
+			</View>
+
 			<ScrollView
-				className="p-[2rem]"
+				style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{
 					paddingBottom: scrollViewBottomPadding,
 				}}
 			>
 				{/* Regular Services */}
-				<View className="mb-[1.5rem]">
-					<Text className="mb-[1.5rem] text-[2rem] font-bold">Bookings</Text>
+				<View style={{ marginBottom: 24 }}>
+					<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+						<View 
+							style={{ 
+								width: 4, 
+								height: 28, 
+								backgroundColor: colors.primary, 
+								marginRight: 12,
+								borderRadius: 2,
+							}} 
+						/>
+						<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
+							Services
+						</Text>
+					</View>
 					{regularServices?.map((service) => (
 						<ServiceCard
 							key={service.id}
@@ -138,19 +191,47 @@ export default function BookingPage() {
 				</View>
 
 				{/* Deals */}
-				<View>
-					<Text className="mb-[1.5rem] text-[2rem] font-bold">Deals</Text>
-					{dealServices.map((service) => (
-						<ServiceCard
-							key={service.id}
-							service={service}
-							quantity={cart.getItemQuantity(service.id)}
-							onAdd={() => cart.addToCart(service)}
-							onIncrease={() => cart.increaseQuantity(service.id)}
-							onDecrease={() => cart.decreaseQuantity(service.id)}
-						/>
-					))}
-				</View>
+				{dealServices.length > 0 && (
+					<View style={{ marginBottom: 24 }}>
+						<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+							<View 
+								style={{ 
+									width: 4, 
+									height: 28, 
+									backgroundColor: colors.secondary, 
+									marginRight: 12,
+									borderRadius: 2,
+								}} 
+							/>
+							<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
+								Special Deals
+							</Text>
+							<View 
+								style={{ 
+									backgroundColor: colors.secondaryMuted,
+									paddingHorizontal: 8,
+									paddingVertical: 4,
+									borderRadius: 8,
+									marginLeft: 12,
+								}}
+							>
+								<Text style={{ color: colors.secondary, fontSize: 12, fontWeight: '600' }}>
+									💰 Save More
+								</Text>
+							</View>
+						</View>
+						{dealServices.map((service) => (
+							<ServiceCard
+								key={service.id}
+								service={service}
+								quantity={cart.getItemQuantity(service.id)}
+								onAdd={() => cart.addToCart(service)}
+								onIncrease={() => cart.increaseQuantity(service.id)}
+								onDecrease={() => cart.decreaseQuantity(service.id)}
+							/>
+						))}
+					</View>
+				)}
 			</ScrollView>
 
 			<CartSummary
