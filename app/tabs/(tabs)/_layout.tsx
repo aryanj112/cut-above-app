@@ -2,8 +2,10 @@ import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-import { Image } from "react-native";
+import { Image, Platform } from "react-native";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function TabBarIcon(props: {
 	name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -13,13 +15,33 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
+	const { colors } = useTheme();
+	const insets = useSafeAreaInsets();
+	
 	return (
 		<ProtectedRoute>
 			<Tabs
 				screenOptions={{
 					// Disable the static render of the header on web
 					// to prevent a hydration error in React Navigation v6.
-					headerShown: useClientOnlyValue(false, true),
+					headerShown: false,
+					tabBarActiveTintColor: colors.tabIconSelected,
+					tabBarInactiveTintColor: colors.tabIconDefault,
+					tabBarStyle: {
+						backgroundColor: colors.tabBackground,
+						borderTopColor: colors.border,
+						borderTopWidth: 1,
+						elevation: 0,
+						shadowOpacity: 0,
+						height: 60 + insets.bottom,
+						paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+						paddingTop: 8,
+					},
+					tabBarLabelStyle: {
+						fontSize: 12,
+						fontWeight: '600',
+						marginBottom: 4,
+					},
 				}}
 			>
 				<Tabs.Screen

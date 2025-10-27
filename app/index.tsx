@@ -6,21 +6,19 @@
 // - Route to main router once setup.
 import "react-native-url-polyfill/auto";
 import Auth from "@/components/Auth";
-import { Box } from "@/components/ui/box";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
 import { useRouter } from "expo-router";
-import { ScrollView, View } from "react-native";
-import { Image, TouchableOpacity, useColorScheme } from "react-native";
+import { View, Image, Text, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useEffect } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
 	const router = useRouter();
-	const colorScheme = useColorScheme();
-	const isDark = colorScheme === "dark";
 	const { session, loading } = useAuth();
+	const { colors, colorMode, toggleColorMode } = useTheme();
+	const insets = useSafeAreaInsets();
 
 	// Redirect to home if user is already authenticated
 	useEffect(() => {
@@ -32,61 +30,180 @@ export default function Home() {
 	// Show loading state while checking authentication
 	if (loading) {
 		return (
-			<Box
-				className={`flex-1 ${
-					isDark ? "bg-gray-950" : "bg-gray-50"
-				} justify-center items-center`}
+			<View
+				style={{
+					flex: 1,
+					backgroundColor: colors.background,
+					justifyContent: 'center',
+					alignItems: 'center',
+				}}
 			>
-				<Text className={`text-lg ${isDark ? "text-white" : "text-gray-900"}`}>
+				<ActivityIndicator size="large" color={colors.primary} />
+				<Text style={{ marginTop: 16, fontSize: 16, color: colors.textSecondary }}>
 					Loading...
 				</Text>
-			</Box>
+			</View>
 		);
 	}
 
 	return (
-		<Box className={`flex-1 ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
-			<Box className="flex-1 justify-center items-center px-6 py-safe">
-				<Box className="items-center mb-16">
-					<Image
-						className="w-40 h-40 mt-8"
-						source={require("../assets/images/logo.png")}
-					/>
+		<View style={{ flex: 1, backgroundColor: colors.background }}>
+			{/* Theme Toggle Button */}
+			<TouchableOpacity
+				onPress={toggleColorMode}
+				style={{
+					position: 'absolute',
+					top: insets.top + 16,
+					right: 20,
+					width: 44,
+					height: 44,
+					borderRadius: 22,
+					backgroundColor: colors.backgroundSecondary,
+					justifyContent: 'center',
+					alignItems: 'center',
+					zIndex: 10,
+					borderWidth: 1,
+					borderColor: colors.border,
+					shadowColor: colors.cardShadow,
+					shadowOffset: { width: 0, height: 2 },
+					shadowOpacity: 0.2,
+					shadowRadius: 4,
+					elevation: 3,
+				}}
+			>
+				<Ionicons 
+					name={colorMode === 'dark' ? 'sunny' : 'moon'} 
+					size={22} 
+					color={colors.text} 
+				/>
+			</TouchableOpacity>
+
+			<ScrollView 
+				contentContainerStyle={{ 
+					flexGrow: 1,
+					justifyContent: 'center',
+					paddingTop: Math.max(insets.top + 60, 80),
+					paddingBottom: Math.max(insets.bottom + 20, 40),
+					paddingHorizontal: 24,
+				}}
+				showsVerticalScrollIndicator={false}
+			>
+				{/* Logo Section */}
+				<View style={{ alignItems: 'center', marginBottom: 48 }}>
+					<View 
+						style={{
+							width: 140,
+							height: 140,
+							borderRadius: 70,
+							backgroundColor: colors.primaryMuted,
+							justifyContent: 'center',
+							alignItems: 'center',
+							marginBottom: 20,
+							borderWidth: 3,
+							borderColor: colors.primary,
+							shadowColor: colors.primary,
+							shadowOffset: { width: 0, height: 4 },
+							shadowOpacity: 0.3,
+							shadowRadius: 12,
+							elevation: 8,
+						}}
+					>
+						<Image
+							style={{ width: 120, height: 120, borderRadius: 60 }}
+							source={require("../assets/images/logo.png")}
+						/>
+					</View>
 
 					<Text
-						className={`text-4xl font-black mb-3 ${
-							isDark ? "text-white" : "text-gray-900"
-						}`}
+						style={{
+							fontSize: 32,
+							fontWeight: '900',
+							marginBottom: 8,
+							color: colors.text,
+							textAlign: 'center',
+						}}
 					>
 						One Cut Above
 					</Text>
 					<Text
-						className={`text-lg font-medium ${
-							isDark ? "text-gray-400" : "text-gray-600"
-						} text-center px-4`}
+						style={{
+							fontSize: 16,
+							fontWeight: '500',
+							color: colors.textSecondary,
+							textAlign: 'center',
+							paddingHorizontal: 16,
+							marginBottom: 16,
+						}}
 					>
 						Premium barbershop experience awaits
 					</Text>
-				</Box>
 
-				<Box
-					className={`w-full max-w-sm rounded-3xl p-8 shadow-2xl ${
-						isDark
-							? "bg-gray-900/50 border border-gray-800/50"
-							: "bg-white/90 border border-white/50"
-					}`}
+					{/* Feature Pills */}
+					<View style={{ flexDirection: 'row', gap: 10 }}>
+						<View 
+							style={{ 
+								backgroundColor: colors.secondaryMuted,
+								paddingHorizontal: 12,
+								paddingVertical: 6,
+								borderRadius: 16,
+								borderWidth: 1,
+								borderColor: colors.secondary,
+							}}
+						>
+							<Text style={{ color: colors.secondary, fontSize: 12, fontWeight: '600' }}>
+								Fast Booking
+							</Text>
+						</View>
+						<View 
+							style={{ 
+								backgroundColor: colors.primaryMuted,
+								paddingHorizontal: 12,
+								paddingVertical: 6,
+								borderRadius: 16,
+								borderWidth: 1,
+								borderColor: colors.primary,
+							}}
+						>
+							<Text style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>
+								Top Barbers
+							</Text>
+						</View>
+					</View>
+				</View>
+
+				{/* Auth Card */}
+				<View
+					style={{
+						width: '100%',
+						maxWidth: 400,
+						borderRadius: 24,
+						padding: 28,
+						backgroundColor: colors.card,
+						borderWidth: 1,
+						borderColor: colors.border,
+						shadowColor: colors.cardShadow,
+						shadowOffset: { width: 0, height: 8 },
+						shadowOpacity: 0.15,
+						shadowRadius: 16,
+						elevation: 8,
+						alignSelf: 'center',
+					}}
 				>
 					<Text
-						className={`text-2xl font-bold text-center ${
-							isDark ? "text-white" : "text-gray-900"
-						}`}
+						style={{
+							fontSize: 22,
+							fontWeight: '700',
+							textAlign: 'center',
+							marginBottom: 20,
+							color: colors.text,
+						}}
 					>
-						Welcome
+						Welcome Back
 					</Text>
 
 					<Auth />
-				</Box>
-			</Box>
-		</Box>
+				</View>
+			</ScrollView>
+		</View>
 	);
 }
