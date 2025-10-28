@@ -13,3 +13,7 @@ entrypoint = "./functions/delete-user/index.ts"
 [functions.get-services]
 enabled = true
 verify_jwt = true
+
+[functions.create-customer-id]
+enabled = true
+verify_jwt = true

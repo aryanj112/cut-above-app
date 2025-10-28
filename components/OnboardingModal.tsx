@@ -28,6 +28,9 @@ export default function OnboardingModal({ visible, onClose }: Props) {
       const { data: { user }, error: uerr } = await supabase.auth.getUser();
       if (uerr || !user) { Alert.alert("Not signed in"); return; }
 
+      // create a customer id on square
+      const { data, error } = await supabase.functions.invoke("create-customer-id")
+
       // upsert profiles
       const { error: perr } = await supabase.from("profiles").upsert({
         id: user.id,
@@ -36,6 +39,7 @@ export default function OnboardingModal({ visible, onClose }: Props) {
         birthday: birthday || null,
         onboarded: true,
         updated_at: new Date().toISOString(),
+        square_id: data?.customer?.id || null,
       }, { onConflict: "id" });
       if (perr) throw perr;
 
