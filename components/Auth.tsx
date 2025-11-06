@@ -1,17 +1,12 @@
 import React, { useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, View, Text, TouchableOpacity, TextInput } from "react-native";
 import { supabase } from "../lib/supabase";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { TouchableOpacity } from "react-native";
-import { Box } from "@/components/ui/box";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "react-native";
 import { makeRedirectUri } from "expo-auth-session";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const redirectTo = `com.projectlift://google-auth`;
 
@@ -59,8 +54,7 @@ const sendMagicLink = async () => {
 };
 
 export default function Auth() {
-	const colorScheme = useColorScheme();
-	const isDark = colorScheme === "dark";
+	const { colors } = useTheme();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -97,78 +91,129 @@ export default function Auth() {
 	}
 
 	return (
-		<View className="p-3">
-			<View className="py-1 self-stretch mt-5">
-				<Text className="mb-2 text-base font-semibold text-gray-700">
+		<View>
+			<View style={{ marginBottom: 16 }}>
+				<Text style={{ marginBottom: 8, fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
 					Email
 				</Text>
-				<Input variant="outline" size="md">
-					<InputField
+				<View 
+					style={{
+						backgroundColor: colors.background,
+						borderWidth: 1,
+						borderColor: colors.border,
+						borderRadius: 12,
+						paddingHorizontal: 14,
+						paddingVertical: 12,
+					}}
+				>
+					<TextInput
 						onChangeText={(text) => setEmail(text)}
 						value={email}
 						placeholder="email@address.com"
+						placeholderTextColor={colors.textMuted}
 						autoCapitalize="none"
 						keyboardType="email-address"
+						style={{ fontSize: 16, color: colors.text }}
 					/>
-				</Input>
+				</View>
 			</View>
-			<View className="py-1 self-stretch">
-				<Text className="mb-2 text-base font-semibold text-gray-700">
+
+			<View style={{ marginBottom: 20 }}>
+				<Text style={{ marginBottom: 8, fontSize: 14, fontWeight: '600', color: colors.textSecondary }}>
 					Password
 				</Text>
-				<Input variant="outline" size="md">
-					<InputField
-						onChangeText={(text: string) => setPassword(text)}
-						value={password}
-						secureTextEntry={true}
-						placeholder="Password"
-						autoCapitalize="none"
-					/>
-				</Input>
-			</View>
-			<View className="py-1 self-stretch mt-5">
-				<Button
-					variant="solid"
-					action="primary"
-					size="md"
-					isDisabled={loading}
-					onPress={() => signInWithEmail()}
+				<View 
+					style={{
+						backgroundColor: colors.background,
+						borderWidth: 1,
+						borderColor: colors.border,
+						borderRadius: 12,
+						paddingHorizontal: 14,
+						paddingVertical: 12,
+					}}
 				>
-					<ButtonText>Sign in</ButtonText>
-				</Button>
+				<TextInput
+					onChangeText={(text: string) => setPassword(text)}
+					value={password}
+					secureTextEntry={true}
+					placeholder="Password"
+					placeholderTextColor={colors.textMuted}
+					autoCapitalize="none"
+					style={{ fontSize: 16, color: colors.text }}
+				/>
+				</View>
 			</View>
-			<View className="py-1 self-stretch">
-				<Button
-					variant="outline"
-					action="secondary"
-					size="md"
-					isDisabled={loading}
-					onPress={() => signUpWithEmail()}
-				>
-					<ButtonText>Sign up</ButtonText>
-				</Button>
 
-				<TouchableOpacity
-					onPress={performOAuth}
-					disabled={loading}
-					className={`mt-10 w-full rounded-2xl py-5 px-6 flex-row items-center justify-center mb-6 shadow-lg ${
-						isDark
-							? "bg-white/10 border border-white/20"
-							: "bg-white border border-gray-200/50"
-					} ${loading ? "opacity-50" : ""}`}
-				>
-					<Box className="w-6 h-6 mr-4">
-						<Ionicons name="logo-google" size={20} color="#4285F4" />
-					</Box>
-					<Text
-						className={`font-semibold text-base ${
-							isDark ? "text-white" : "text-gray-900"
-						}`}
-					>
-						{loading ? "Signing in..." : "Continue with Google"}
-					</Text>
-				</TouchableOpacity>
+			<TouchableOpacity
+				disabled={loading}
+				onPress={() => signInWithEmail()}
+				style={{
+					backgroundColor: colors.primary,
+					paddingVertical: 14,
+					borderRadius: 12,
+					marginBottom: 12,
+					shadowColor: colors.primary,
+					shadowOffset: { width: 0, height: 4 },
+					shadowOpacity: 0.3,
+					shadowRadius: 6,
+					elevation: 4,
+					opacity: loading ? 0.6 : 1,
+				}}
+			>
+				<Text style={{ color: '#ffffff', textAlign: 'center', fontWeight: '700', fontSize: 16 }}>
+					Sign In
+				</Text>
+			</TouchableOpacity>
+
+			<TouchableOpacity
+				disabled={loading}
+				onPress={() => signUpWithEmail()}
+				style={{
+					backgroundColor: colors.backgroundSecondary,
+					paddingVertical: 14,
+					borderRadius: 12,
+					marginBottom: 24,
+					borderWidth: 1,
+					borderColor: colors.border,
+					opacity: loading ? 0.6 : 1,
+				}}
+			>
+				<Text style={{ color: colors.text, textAlign: 'center', fontWeight: '600', fontSize: 16 }}>
+					Sign Up
+				</Text>
+			</TouchableOpacity>
+
+			<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+				<View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+				<Text style={{ marginHorizontal: 16, color: colors.textMuted, fontSize: 14 }}>or</Text>
+				<View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
 			</View>
+
+			<TouchableOpacity
+				onPress={performOAuth}
+				disabled={loading}
+				style={{
+					backgroundColor: colors.card,
+					paddingVertical: 14,
+					borderRadius: 12,
+					flexDirection: 'row',
+					alignItems: 'center',
+					justifyContent: 'center',
+					borderWidth: 1,
+					borderColor: colors.border,
+					shadowColor: colors.cardShadow,
+					shadowOffset: { width: 0, height: 2 },
+					shadowOpacity: 0.1,
+					shadowRadius: 4,
+					elevation: 2,
+					opacity: loading ? 0.6 : 1,
+				}}
+			>
+				<Ionicons name="logo-google" size={20} color="#4285F4" style={{ marginRight: 10 }} />
+				<Text style={{ fontWeight: '600', fontSize: 16, color: colors.text }}>
+					{loading ? "Signing in..." : "Continue with Google"}
+				</Text>
+			</TouchableOpacity>
 		</View>
 	);
 }
