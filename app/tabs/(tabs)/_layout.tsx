@@ -17,7 +17,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
 	const { colors } = useTheme();
 	const insets = useSafeAreaInsets();
-	
+
 	return (
 		<ProtectedRoute>
 			<Tabs
@@ -39,7 +39,7 @@ export default function TabLayout() {
 					},
 					tabBarLabelStyle: {
 						fontSize: 12,
-						fontWeight: '600',
+						fontWeight: "600",
 						marginBottom: 4,
 					},
 				}}
@@ -85,19 +85,6 @@ export default function TabLayout() {
 						),
 					}}
 				/>
-				{/* <Tabs.Screen
-					name="book"
-					options={{
-						title: "Book",
-						tabBarIcon: ({ color, size }) => (
-							<Image
-								source={require("../../../assets/images/account-icon.png")}
-								style={{ width: size, height: size, tintColor: color }}
-								resizeMode="contain"
-							/>
-						),
-					}}
-				/> */}
 			</Tabs>
 		</ProtectedRoute>
 	);

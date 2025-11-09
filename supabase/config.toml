@@ -17,3 +17,7 @@ verify_jwt = true
 [functions.create-customer-id]
 enabled = true
 verify_jwt = true
+
+[functions.get-availability]
+enabled = true
+verify_jwt = true

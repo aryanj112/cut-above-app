@@ -30,26 +30,21 @@ export default function BookingPage() {
 				// console.log("Edge function response:", data);
 
 				// Map Square API service data to your Service type
-				const mappedServices: Service[] =
-					data.objects
-						?.map((squareItem: any) => {
-							const itemData = squareItem.item_data;
-							return {
-								id: squareItem.id,
-								name: itemData?.name || "Unknown Service",
-								price: itemData?.variations?.[0]?.item_variation_data
-									?.price_money?.amount
-									? itemData.variations[0].item_variation_data.price_money
-											.amount / 100
-									: 0, // Convert cents to dollars
-								timeMin: itemData?.service_duration
-									? Math.round(itemData.service_duration / 60)
-									: 15, // Convert seconds to minutes
-								isDeal: itemData?.is_deal || false, // Check if it's marked as a deal
-							};
-						})
-						.filter((service: Service) => service.name !== "Unknown Service") ||
-					[];
+				const mappedServices: Service[] = data.objects.flatMap((obj) => {
+					const item = obj.item_data;
+					const baseName = item.name;
+
+					return item.variations.map((variation) => {
+						const v = variation.item_variation_data;
+						return {
+							id: variation.id,
+							name: `${baseName} ${v.name}`.trim(),
+							price: v.price_money.amount / 100, // Convert from cents to dollars
+							timeMin: v.service_duration ? v.service_duration / 60000 : 0, // Convert ms → minutes
+							isDeal: false, // Default, you can add your own logic here
+						};
+					});
+				});
 
 				// console.log("Mapped services:", mappedServices);
 				setRegularServices(mappedServices);
@@ -71,28 +66,36 @@ export default function BookingPage() {
 		setIsBookingModalVisible(true);
 	};
 
-	const handleConfirmBooking = (bookingData: BookingFormData) => {
-		// Create the appointment object
-		const appointment: Appointment = {
-			id: `apt_${Date.now()}`, // Simple ID generation
-			date: bookingData.date,
-			time: bookingData.time,
-			services: [...cart.cartItems],
-			totalPrice: cart.getTotalPrice(),
-			totalTime: cart.getTotalTime(),
-			customerName: bookingData.customerName,
-			customerPhone: bookingData.customerPhone,
-			customerEmail: bookingData.customerEmail,
-			status: "pending",
-			notes: bookingData.notes,
-			createdAt: new Date().toISOString(),
+	const handleConfirmBooking = async (bookingData: BookingFormData) => {
+		const booking = {
+			booking_day: bookingData.date,
+			booking_time: bookingData.time,
+			user_id: await supabase.auth
+				.getUser()
+				.then(({ data }) => data.user?.id || ""),
+			service_id: cart.getCartServiceIds()[0],
+			booking_length: cart.getTotalTime(),
+			notes: bookingData.notes || "",
 		};
 
-		// Here you would typically save to your backend/database
-		console.log("Booking confirmed:", appointment);
+		// create a booking the bookings table of supabase
+		await supabase
+			.from("bookings")
+			.insert(booking)
+			.then(({ data, error }) => {
+				if (error) {
+					console.error("Error creating booking:", error);
+					Alert.alert(
+						"Booking Failed",
+						"An error occurred while creating your booking. Please try again."
+					);
+				} else {
+					console.log("Booking created successfully:", data);
+				}
+			});
 
 		// Show success message
-		Alert.alert(
+		await Alert.alert(
 			"Booking Confirmed! 🎉",
 			`Your appointment is scheduled for ${bookingData.date} at ${bookingData.time}. We'll send you a confirmation shortly.`,
 			[
@@ -119,8 +122,8 @@ export default function BookingPage() {
 	return (
 		<View style={{ flex: 1, backgroundColor: colors.background }}>
 			{/* Header with Theme Toggle */}
-			<View 
-				style={{ 
+			<View
+				style={{
 					paddingTop: 60,
 					paddingHorizontal: 20,
 					paddingBottom: 20,
@@ -129,8 +132,16 @@ export default function BookingPage() {
 					borderBottomColor: colors.border,
 				}}
 			>
-				<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-					<Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text }}>
+				<View
+					style={{
+						flexDirection: "row",
+						justifyContent: "space-between",
+						alignItems: "center",
+					}}
+				>
+					<Text
+						style={{ fontSize: 28, fontWeight: "bold", color: colors.text }}
+					>
 						Book Services
 					</Text>
 					<TouchableOpacity
@@ -140,16 +151,16 @@ export default function BookingPage() {
 							height: 44,
 							borderRadius: 22,
 							backgroundColor: colors.backgroundSecondary,
-							justifyContent: 'center',
-							alignItems: 'center',
+							justifyContent: "center",
+							alignItems: "center",
 							borderWidth: 1,
 							borderColor: colors.border,
 						}}
 					>
-						<Ionicons 
-							name={colorMode === 'dark' ? 'sunny' : 'moon'} 
-							size={22} 
-							color={colors.text} 
+						<Ionicons
+							name={colorMode === "dark" ? "sunny" : "moon"}
+							size={22}
+							color={colors.text}
 						/>
 					</TouchableOpacity>
 				</View>
@@ -164,17 +175,25 @@ export default function BookingPage() {
 			>
 				{/* Regular Services */}
 				<View style={{ marginBottom: 24 }}>
-					<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-						<View 
-							style={{ 
-								width: 4, 
-								height: 28, 
-								backgroundColor: colors.primary, 
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							marginBottom: 16,
+						}}
+					>
+						<View
+							style={{
+								width: 4,
+								height: 28,
+								backgroundColor: colors.primary,
 								marginRight: 12,
 								borderRadius: 2,
-							}} 
+							}}
 						/>
-						<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
+						<Text
+							style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
+						>
 							Services
 						</Text>
 					</View>
@@ -193,21 +212,29 @@ export default function BookingPage() {
 				{/* Deals */}
 				{dealServices.length > 0 && (
 					<View style={{ marginBottom: 24 }}>
-						<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-							<View 
-								style={{ 
-									width: 4, 
-									height: 28, 
-									backgroundColor: colors.secondary, 
+						<View
+							style={{
+								flexDirection: "row",
+								alignItems: "center",
+								marginBottom: 16,
+							}}
+						>
+							<View
+								style={{
+									width: 4,
+									height: 28,
+									backgroundColor: colors.secondary,
 									marginRight: 12,
 									borderRadius: 2,
-								}} 
+								}}
 							/>
-							<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
+							<Text
+								style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
+							>
 								Special Deals
 							</Text>
-							<View 
-								style={{ 
+							<View
+								style={{
 									backgroundColor: colors.secondaryMuted,
 									paddingHorizontal: 8,
 									paddingVertical: 4,
@@ -215,7 +242,13 @@ export default function BookingPage() {
 									marginLeft: 12,
 								}}
 							>
-								<Text style={{ color: colors.secondary, fontSize: 12, fontWeight: '600' }}>
+								<Text
+									style={{
+										color: colors.secondary,
+										fontSize: 12,
+										fontWeight: "600",
+									}}
+								>
 									💰 Save More
 								</Text>
 							</View>
