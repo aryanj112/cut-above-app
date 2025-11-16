@@ -1,4 +1,4 @@
-import { Text, Image, View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, Image, View, TouchableOpacity } from "react-native";
 import UpcomingApptCard from '@/components/UpcomingApptCard';
 import { Button } from "@/components/ui/button";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
@@ -75,7 +75,7 @@ export default function HomePage() {
         </View>
       </View>
 
-      <ScrollView 
+      <View
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
@@ -120,7 +120,7 @@ export default function HomePage() {
         </View>
 
         {/* CTA Button */}
-        <View style={{ paddingHorizontal: 20, marginTop: 30 }}>
+        <View style={{ paddingHorizontal: 20, marginTop: 15 }}>
           <TouchableOpacity
             onPress={() => router.push('/tabs/booking')}
             style={{
@@ -140,7 +140,7 @@ export default function HomePage() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
 
       <MessageButton />
 

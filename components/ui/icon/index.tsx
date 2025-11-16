@@ -3,6 +3,7 @@ import { createIcon } from '@gluestack-ui/core/icon/creator';
 import { Path } from 'react-native-svg';
 import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import { cssInterop } from 'nativewind';
+import { TbMessageCircle as RawMessageCircle } from 'react-icons/tb';
 import { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
 import {
   PrimitiveIcon,
