@@ -10,43 +10,79 @@ import { BookingFormData, Appointment } from "../../types/Appointment";
 import { supabase } from "../../../lib/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
+import parseSquareCatalogToServices from "../../utils/service_parser";
 
 export default function BookingPage() {
 	const [isCartExpanded, setIsCartExpanded] = useState(true);
 	const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
 	const [regularServices, setRegularServices] = useState<Service[]>([]);
 	const dealServices: Service[] = services.services.filter((s) => s.isDeal);
+	const [locations, setLocations] = useState<{ id: string; name: string }[]>(
+		[]
+	);
+	const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
 	const cart = useCart();
 	const { colors, colorMode, toggleColorMode } = useTheme();
 
 	// useEffect to call Supabase edge function
 	useEffect(() => {
 		const callEdgeFunction = async () => {
-			const { data, error } = await supabase.functions.invoke("get-services");
+			const { data: locationsData, error: locationsError } =
+				await supabase.functions.invoke("get-locations");
 
-			if (error) {
-				console.error("Error calling edge function:", error);
+			if (locationsError) {
+				console.error(
+					"Error calling get-locations edge function:",
+					locationsError
+				);
 			} else {
-				// console.log("Edge function response:", data);
+				// Assuming data contains an array of locations, we take the first one
+				if (locationsData?.locations && locationsData.locations.length > 0) {
+					// map to only include the business name and id
+					const mappedLocations = locationsData.locations.map(
+						(location: any) => ({
+							id: location.id,
+							name: location.business_name,
+						})
+					);
+					// store in state for UI, but also keep the local copy to avoid
+					// relying on the (async) state update when mapping services below
+					setLocations(mappedLocations);
+				}
+			}
+
+			const { data: servicesData, error: servicesError } =
+				await supabase.functions.invoke("get-services");
+
+			if (servicesError) {
+				console.error(
+					"Error calling get-services edge function:",
+					servicesError
+				);
+			} else {
+				//console.log("Edge function response:", servicesData);
 
 				// Map Square API service data to your Service type
-				const mappedServices: Service[] = data.objects.flatMap((obj) => {
-					const item = obj.item_data;
-					const baseName = item.name;
+				// Important: use the locally-mapped locations (if present) instead
+				// of the `locations` state variable which won't reflect the
+				// newly-set locations immediately due to setState being async.
+				const effectiveLocations =
+					locations && locations.length > 0
+						? locations
+						: locationsData &&
+						  locationsData.locations &&
+						  locationsData.locations.length > 0
+						? locationsData.locations.map((location: any) => ({
+								id: location.id,
+								name: location.business_name,
+						  }))
+						: [];
 
-					return item.variations.map((variation) => {
-						const v = variation.item_variation_data;
-						return {
-							id: variation.id,
-							name: `${baseName} ${v.name}`.trim(),
-							price: v.price_money.amount / 100, // Convert from cents to dollars
-							timeMin: v.service_duration ? v.service_duration / 60000 : 0, // Convert ms → minutes
-							isDeal: false, // Default, you can add your own logic here
-						};
-					});
-				});
+				const mappedServices: Service[] = parseSquareCatalogToServices(
+					servicesData,
+					effectiveLocations
+				);
 
-				// console.log("Mapped services:", mappedServices);
 				setRegularServices(mappedServices);
 			}
 		};
@@ -114,6 +150,15 @@ export default function BookingPage() {
 		setIsBookingModalVisible(false);
 	};
 
+	const handleLocationSelect = (locationId: string) => {
+		setSelectedLocation(locationId);
+		// filter services based on location
+		const filteredServices = regularServices.filter(
+			(s) => s.location_id === locationId
+		);
+		setRegularServices(filteredServices);
+	};
+
 	// Calculate bottom padding for ScrollView
 	const cartHeight = isCartExpanded ? 300 : 60;
 	const scrollViewBottomPadding =
@@ -166,15 +211,14 @@ export default function BookingPage() {
 				</View>
 			</View>
 
-			<ScrollView
-				style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
-				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{
-					paddingBottom: scrollViewBottomPadding,
-				}}
-			>
-				{/* Regular Services */}
-				<View style={{ marginBottom: 24 }}>
+			{selectedLocation === null && locations.length > 0 && (
+				<View
+					className="px-5 pt-5 pb-5 border-b"
+					style={{
+						borderBottomColor: colors.border,
+						backgroundColor: colors.backgroundSecondary,
+					}}
+				>
 					<View
 						style={{
 							flexDirection: "row",
@@ -194,23 +238,50 @@ export default function BookingPage() {
 						<Text
 							style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
 						>
-							Services
+							Select Category
 						</Text>
 					</View>
-					{regularServices?.map((service) => (
-						<ServiceCard
-							key={service.id}
-							service={service}
-							quantity={cart.getItemQuantity(service.id)}
-							onAdd={() => cart.addToCart(service)}
-							onIncrease={() => cart.increaseQuantity(service.id)}
-							onDecrease={() => cart.decreaseQuantity(service.id)}
-						/>
-					))}
-				</View>
 
-				{/* Deals */}
-				{dealServices.length > 0 && (
+					{/* Full-width buttons styled like service cards */}
+					<View className="space-y-3">
+						{locations.map((location) => {
+							const selected = selectedLocation === location.id;
+							return (
+								<TouchableOpacity
+									key={location.id}
+									onPress={() => handleLocationSelect(location.id)}
+									activeOpacity={0.85}
+									className="w-full rounded-lg px-4 py-4"
+									style={{
+										backgroundColor: selected
+											? colors.primary
+											: colors.background,
+										borderWidth: 1,
+										borderColor: selected ? colors.primary : colors.border,
+									}}
+								>
+									<Text
+										className="text-lg font-semibold"
+										style={{ color: selected ? "#fff" : colors.text }}
+									>
+										{location.name}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
+					</View>
+				</View>
+			)}
+
+			{selectedLocation && (
+				<ScrollView
+					style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{
+						paddingBottom: scrollViewBottomPadding,
+					}}
+				>
+					{/* Regular Services */}
 					<View style={{ marginBottom: 24 }}>
 						<View
 							style={{
@@ -223,7 +294,7 @@ export default function BookingPage() {
 								style={{
 									width: 4,
 									height: 28,
-									backgroundColor: colors.secondary,
+									backgroundColor: colors.primary,
 									marginRight: 12,
 									borderRadius: 2,
 								}}
@@ -231,29 +302,10 @@ export default function BookingPage() {
 							<Text
 								style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
 							>
-								Special Deals
+								Services
 							</Text>
-							<View
-								style={{
-									backgroundColor: colors.secondaryMuted,
-									paddingHorizontal: 8,
-									paddingVertical: 4,
-									borderRadius: 8,
-									marginLeft: 12,
-								}}
-							>
-								<Text
-									style={{
-										color: colors.secondary,
-										fontSize: 12,
-										fontWeight: "600",
-									}}
-								>
-									💰 Save More
-								</Text>
-							</View>
 						</View>
-						{dealServices.map((service) => (
+						{regularServices?.map((service) => (
 							<ServiceCard
 								key={service.id}
 								service={service}
@@ -264,8 +316,69 @@ export default function BookingPage() {
 							/>
 						))}
 					</View>
-				)}
-			</ScrollView>
+
+					{/* Deals */}
+					{dealServices.length > 0 && (
+						<View style={{ marginBottom: 24 }}>
+							<View
+								style={{
+									flexDirection: "row",
+									alignItems: "center",
+									marginBottom: 16,
+								}}
+							>
+								<View
+									style={{
+										width: 4,
+										height: 28,
+										backgroundColor: colors.secondary,
+										marginRight: 12,
+										borderRadius: 2,
+									}}
+								/>
+								<Text
+									style={{
+										fontSize: 24,
+										fontWeight: "700",
+										color: colors.text,
+									}}
+								>
+									Special Deals
+								</Text>
+								<View
+									style={{
+										backgroundColor: colors.secondaryMuted,
+										paddingHorizontal: 8,
+										paddingVertical: 4,
+										borderRadius: 8,
+										marginLeft: 12,
+									}}
+								>
+									<Text
+										style={{
+											color: colors.secondary,
+											fontSize: 12,
+											fontWeight: "600",
+										}}
+									>
+										💰 Save More
+									</Text>
+								</View>
+							</View>
+							{dealServices.map((service) => (
+								<ServiceCard
+									key={service.id}
+									service={service}
+									quantity={cart.getItemQuantity(service.id)}
+									onAdd={() => cart.addToCart(service)}
+									onIncrease={() => cart.increaseQuantity(service.id)}
+									onDecrease={() => cart.decreaseQuantity(service.id)}
+								/>
+							))}
+						</View>
+					)}
+				</ScrollView>
+			)}
 
 			<CartSummary
 				cartItems={cart.cartItems}

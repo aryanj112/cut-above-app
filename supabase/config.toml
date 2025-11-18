@@ -21,3 +21,7 @@ verify_jwt = true
 [functions.get-availability]
 enabled = true
 verify_jwt = true
+
+[functions.get-locations]
+enabled = true
+verify_jwt = true
