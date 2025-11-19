@@ -47,7 +47,6 @@ export default function MessageButton() {
                         elevation: 6,
                     }}
                 >
-                    {/* <TbMessageCircle className="text-white h-6 w-6" /> */}
                     <PhoneIcon className="text-white h-2 w-2" />
                 </Pressable>
             </Box>
