@@ -16,8 +16,8 @@ export default function BookingPage() {
 	const [isCartExpanded, setIsCartExpanded] = useState(true);
 	const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
 	const [regularServices, setRegularServices] = useState<Service[]>([]);
-	const dealServices: Service[] = services.services.filter((s) => s.isDeal);
-	const [locations, setLocations] = useState<{ id: string; name: string }[]>(
+	const [dealServices, setDealServices] = useState<Service[]>([]);
+	const [locations, setLocations] = useState<{ id: string; name: string; timezone?: string }[]>(
 		[]
 	);
 	const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
@@ -38,11 +38,12 @@ export default function BookingPage() {
 			} else {
 				// Assuming data contains an array of locations, we take the first one
 				if (locationsData?.locations && locationsData.locations.length > 0) {
-					// map to only include the business name and id
+					// map to only include the business name, id, and timezone
 					const mappedLocations = locationsData.locations.map(
 						(location: any) => ({
 							id: location.id,
 							name: location.business_name,
+							timezone: location.timezone,
 						})
 					);
 					// store in state for UI, but also keep the local copy to avoid
@@ -75,6 +76,7 @@ export default function BookingPage() {
 						? locationsData.locations.map((location: any) => ({
 								id: location.id,
 								name: location.business_name,
+								timezone: location.timezone,
 						  }))
 						: [];
 
@@ -83,7 +85,9 @@ export default function BookingPage() {
 					effectiveLocations
 				);
 
-				setRegularServices(mappedServices);
+				// Separate regular services and deals
+				setRegularServices(mappedServices.filter(s => !s.isDeal));
+				setDealServices(mappedServices.filter(s => s.isDeal));
 			}
 		};
 
@@ -109,9 +113,10 @@ export default function BookingPage() {
 			user_id: await supabase.auth
 				.getUser()
 				.then(({ data }) => data.user?.id || ""),
-			service_id: cart.getCartServiceIds()[0],
+			service_id: cart.getCartVariationIds()[0], // Use actual Square variation ID
 			booking_length: cart.getTotalTime(),
 			notes: bookingData.notes || "",
+			location_id: selectedLocation,
 		};
 
 		// create a booking the bookings table of supabase
@@ -133,7 +138,7 @@ export default function BookingPage() {
 		// Show success message
 		await Alert.alert(
 			"Booking Confirmed! 🎉",
-			`Your appointment is scheduled for ${bookingData.date} at ${bookingData.time}. We'll send you a confirmation shortly.`,
+			`Your appointment is scheduled for ${bookingData.displayDate || bookingData.date} at ${bookingData.displayTime || bookingData.time}. We'll send you a confirmation shortly.`,
 			[
 				{
 					text: "OK",
@@ -163,6 +168,10 @@ export default function BookingPage() {
 	const filteredServices = selectedLocation
 		? regularServices.filter((s) => s.location_id === selectedLocation)
 		: regularServices;
+	
+	const filteredDeals = selectedLocation
+		? dealServices.filter((s) => s.location_id === selectedLocation)
+		: dealServices;
 
 	// Calculate bottom padding for ScrollView
 	const cartHeight = isCartExpanded ? 300 : 60;
@@ -347,7 +356,7 @@ export default function BookingPage() {
 					</View>
 
 					{/* Deals */}
-					{dealServices.length > 0 && (
+					{filteredDeals.length > 0 && (
 						<View style={{ marginBottom: 24 }}>
 							<View
 								style={{
@@ -394,7 +403,7 @@ export default function BookingPage() {
 									</Text>
 								</View>
 							</View>
-							{dealServices.map((service) => (
+							{filteredDeals.map((service) => (
 								<ServiceCard
 									key={service.id}
 									service={service}
@@ -425,6 +434,8 @@ export default function BookingPage() {
 				totalPrice={cart.getTotalPrice()}
 				totalTime={cart.getTotalTime()}
 				onConfirmBooking={handleConfirmBooking}
+				locationId={selectedLocation}
+				locationTimezone={locations.find(loc => loc.id === selectedLocation)?.timezone}
 			/>
 		</View>
 	);

@@ -149,7 +149,8 @@ export default function parseSquareCatalogToServices(catalog, locations) {
 				if (finalPriceCents === null) finalPriceCents = 0;
 
 				const service = {
-					id: `${variationId}_${locId}`, // unique id per variation+location
+					id: `${variationId}_${locId}`, // unique id per variation+location for app
+					variation_id: variationId, // actual Square variation ID for API calls
 					name: `${itemName} - ${variationName}`,
 					price: centsToDollars(finalPriceCents),
 					timeMin: timeMin,

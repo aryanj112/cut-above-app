@@ -24,6 +24,8 @@ interface BookingModalProps {
 	totalPrice: number;
 	totalTime: number;
 	onConfirmBooking: (bookingData: BookingFormData) => void;
+	locationId: string | null;
+	locationTimezone?: string;
 }
 
 export function BookingModal({
@@ -33,9 +35,12 @@ export function BookingModal({
 	totalPrice,
 	totalTime,
 	onConfirmBooking,
+	locationId,
+	locationTimezone,
 }: BookingModalProps) {
 	const [selectedDate, setSelectedDate] = useState("");
 	const [selectedTime, setSelectedTime] = useState<string | null>(null);
+	const [selectedTimeSlot, setSelectedTimeSlot] = useState<Date | null>(null); // Store the actual Date object
 	const [customerNotes, setCustomerNotes] = useState("");
 	const [currentStep, setCurrentStep] = useState<"date" | "time" | "details">(
 		"date"
@@ -45,6 +50,7 @@ export function BookingModal({
 	const resetForm = () => {
 		setSelectedDate("");
 		setSelectedTime("");
+		setSelectedTimeSlot(null);
 		setCurrentStep("date");
 	};
 
@@ -59,8 +65,14 @@ export function BookingModal({
 		handleRetrieveTimeSlots(day.dateString);
 	};
 
-	const handleTimeSelect = (time: string) => {
-		setSelectedTime(time);
+	const handleTimeSelect = (timeSlot: Date) => {
+		// Store the display string for UI
+		setSelectedTime(timeSlot.toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+		}));
+		// Store the actual Date object to preserve UTC time
+		setSelectedTimeSlot(timeSlot);
 		setCurrentStep("details");
 	};
 
@@ -72,9 +84,17 @@ export function BookingModal({
 		const customerEmail = user.data.user?.email || "";
 		const notes = "";
 
+		// Extract UTC time from the Date object
+		// Format: HH:MM:SS in UTC
+		const utcTime = selectedTimeSlot
+			? selectedTimeSlot.toISOString().split('T')[1].split('.')[0]
+			: "";
+
 		const bookingData: BookingFormData = {
 			date: selectedDate,
-			time: selectedTime?.replace(/\s*[AP]M/i, "") || "",
+			time: utcTime,
+			displayDate: formatDate(selectedDate),
+			displayTime: selectedTime || "",
 			customerName,
 			customerPhone,
 			customerEmail,
@@ -95,7 +115,10 @@ export function BookingModal({
 	};
 
 	const formatDate = (dateString: string) => {
-		const date = new Date(dateString);
+		// Parse date string manually to avoid timezone issues
+		// dateString format is "YYYY-MM-DD"
+		const [year, month, day] = dateString.split('-').map(Number);
+		const date = new Date(year, month - 1, day);
 		return date.toLocaleDateString("en-US", {
 			weekday: "long",
 			year: "numeric",
@@ -105,16 +128,32 @@ export function BookingModal({
 	};
 
 	const handleRetrieveTimeSlots = async (date: string) => {
+		// Get the first service variation ID from cart items (if available)
+		// Use variation_id (actual Square ID), not id (composite)
+		const service_variation_id = cartItems.length > 0 ? cartItems[0].service.variation_id : null;
+
 		// fetch time slots from supabase edge function get-availabilities
 		const { data, error } = await supabase.functions.invoke(
 			"get-availability",
 			{
-				body: { date },
+				body: { 
+					date, 
+					location_id: locationId,
+					service_variation_id: service_variation_id,
+					timezone: locationTimezone 
+				},
 			}
 		);
 
 		if (error) {
 			console.error("Error fetching time slots:", error);
+			setTimeSlots([]);
+			return;
+		}
+
+		if (!data || !data.availabilities) {
+			console.warn("No availabilities returned");
+			setTimeSlots([]);
 			return;
 		}
 
@@ -268,32 +307,33 @@ export function BookingModal({
 								</Text>
 
 								<View className="flex-row flex-wrap gap-3">
-									{timeSlots.map((time) => (
-										<TouchableOpacity
-											key={time.toLocaleTimeString()}
-											onPress={() =>
-												handleTimeSelect(time.toLocaleTimeString())
-											}
-											className={`px-4 py-3 rounded-lg border-2 ${
-												selectedTime === time.toLocaleTimeString()
-													? "bg-blue-600 border-blue-600"
-													: "bg-white border-gray-300"
-											}`}
-										>
-											<Text
-												className={`font-semibold ${
-													selectedTime === time.toLocaleTimeString()
-														? "text-white"
-														: "text-gray-800"
+									{timeSlots.map((time) => {
+										const displayTime = time.toLocaleTimeString([], {
+											hour: "2-digit",
+											minute: "2-digit",
+										});
+										return (
+											<TouchableOpacity
+												key={time.toISOString()}
+												onPress={() => handleTimeSelect(time)}
+												className={`px-4 py-3 rounded-lg border-2 ${
+													selectedTime === displayTime
+														? "bg-blue-600 border-blue-600"
+														: "bg-white border-gray-300"
 												}`}
 											>
-												{time.toLocaleTimeString([], {
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</Text>
-										</TouchableOpacity>
-									))}
+												<Text
+													className={`font-semibold ${
+														selectedTime === displayTime
+															? "text-white"
+															: "text-gray-800"
+													}`}
+												>
+													{displayTime}
+												</Text>
+											</TouchableOpacity>
+										);
+									})}
 								</View>
 							</View>
 						)}
