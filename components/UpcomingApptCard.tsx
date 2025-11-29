@@ -34,17 +34,21 @@ export default function UpcomingApptCard({
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const { colors } = useTheme();
 
-  // Format into a date like "September 21, 2025 at 3:30 PM"
-  const formattedDate = new Date(date).toLocaleString("en-US", {
+  // Ensure the date string is treated as UTC by adding 'Z' if not present
+  const utcDateString = date.endsWith('Z') ? date : `${date}Z`;
+  
+  // Format into a date like "September 21, 2025 at 3:30 PM" in the location's timezone
+  const formattedDate = new Date(utcDateString).toLocaleString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: locationTimezone || 'America/New_York', // Use location timezone
   });
 
-  // Extract booking_day and booking_time from the ISO date string
-  const dateObj = new Date(date);
+  // Extract booking_day and booking_time (keep in UTC for API calls)
+  const dateObj = new Date(utcDateString);
   const bookingDay = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
   const bookingTime = dateObj.toISOString().split('T')[1].split('.')[0]; // HH:MM:SS
 

@@ -45,7 +45,9 @@ export default function CancelModal({ showModal, setShowModal, date, formattedDa
   // categorize user into the three cancel groups (no charge, 50% charge, full charge)
   function getCancelGroup(appointmentDate: string): string {
     const now = new Date();
-    const appt = new Date(appointmentDate);
+    // Ensure the date is treated as UTC
+    const utcDateString = appointmentDate.endsWith('Z') ? appointmentDate : `${appointmentDate}Z`;
+    const appt = new Date(utcDateString);
     const diffMs = appt.getTime() - now.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
 
