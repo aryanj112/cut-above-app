@@ -24,18 +24,22 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import { Icon, CloseIcon } from '@/components/ui/icon';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase';
 
 type ModalProps = {
   showModal: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   date: string;  
   formattedDate: string;
+  bookingId?: string;
+  onCancelSuccess?: () => void;
 };
 
-export default function CancelModal({ showModal, setShowModal, date, formattedDate }: ModalProps) {
+export default function CancelModal({ showModal, setShowModal, date, formattedDate, bookingId, onCancelSuccess }: ModalProps) {
   const [agreed, setAgreed] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   // Calculate time remaining before appointment and 
   // categorize user into the three cancel groups (no charge, 50% charge, full charge)
@@ -49,6 +53,52 @@ export default function CancelModal({ showModal, setShowModal, date, formattedDa
     if (diffHours < 24 && diffHours > 0) return "50% Charge (< 24 hours)";
     return "100% Charge (Missed Appointment)";
   }
+
+  // Handle cancellation
+  const handleCancelBooking = async () => {
+    if (!bookingId) {
+      Alert.alert("Error", "Unable to cancel booking: No booking ID provided.");
+      return;
+    }
+
+    setIsCanceling(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-booking', {
+        body: { booking_id: bookingId },
+      });
+
+      if (error) {
+        console.error("Error canceling booking:", error);
+        Alert.alert(
+          "Cancellation Failed",
+          "An error occurred while canceling your booking. Please try again or contact support."
+        );
+      } else {
+        console.log("Booking canceled successfully:", data);
+        Alert.alert(
+          "Appointment Canceled",
+          "Your appointment has been successfully canceled.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setShowModal(false);
+                if (onCancelSuccess) {
+                  onCancelSuccess();
+                }
+              },
+            },
+          ]
+        );
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsCanceling(false);
+    }
+  };
 
   return (
     <>
@@ -114,11 +164,11 @@ export default function CancelModal({ showModal, setShowModal, date, formattedDa
             
             {/* Button to cancel */}
             <Button
-              onPress={() => setShowModal(false)}
-              isDisabled={!agreed} // disable button if user did not agree to terms yet
-              className={`${agreed ? "bg-red-600" : "bg-gray-400"} px-4 py-2 rounded`}
+              onPress={handleCancelBooking}
+              isDisabled={!agreed || isCanceling} // disable button if user did not agree to terms yet or if canceling
+              className={`${agreed && !isCanceling ? "bg-red-600" : "bg-gray-400"} px-4 py-2 rounded`}
             >
-              <ButtonText>Cancel</ButtonText>
+              <ButtonText>{isCanceling ? "Canceling..." : "Cancel Appointment"}</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>
