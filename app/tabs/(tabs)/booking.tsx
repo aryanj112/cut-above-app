@@ -10,48 +10,79 @@ import { BookingFormData, Appointment } from "../../types/Appointment";
 import { supabase } from "../../../lib/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
+import parseSquareCatalogToServices from "../../utils/service_parser";
 
 export default function BookingPage() {
 	const [isCartExpanded, setIsCartExpanded] = useState(true);
 	const [isBookingModalVisible, setIsBookingModalVisible] = useState(false);
 	const [regularServices, setRegularServices] = useState<Service[]>([]);
 	const dealServices: Service[] = services.services.filter((s) => s.isDeal);
+	const [locations, setLocations] = useState<{ id: string; name: string }[]>(
+		[]
+	);
+	const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
 	const cart = useCart();
 	const { colors, colorMode, toggleColorMode } = useTheme();
 
 	// useEffect to call Supabase edge function
 	useEffect(() => {
 		const callEdgeFunction = async () => {
-			const { data, error } = await supabase.functions.invoke("get-services");
+			const { data: locationsData, error: locationsError } =
+				await supabase.functions.invoke("get-locations");
 
-			if (error) {
-				console.error("Error calling edge function:", error);
+			if (locationsError) {
+				console.error(
+					"Error calling get-locations edge function:",
+					locationsError
+				);
 			} else {
-				// console.log("Edge function response:", data);
+				// Assuming data contains an array of locations, we take the first one
+				if (locationsData?.locations && locationsData.locations.length > 0) {
+					// map to only include the business name and id
+					const mappedLocations = locationsData.locations.map(
+						(location: any) => ({
+							id: location.id,
+							name: location.business_name,
+						})
+					);
+					// store in state for UI, but also keep the local copy to avoid
+					// relying on the (async) state update when mapping services below
+					setLocations(mappedLocations);
+				}
+			}
+
+			const { data: servicesData, error: servicesError } =
+				await supabase.functions.invoke("get-services");
+
+			if (servicesError) {
+				console.error(
+					"Error calling get-services edge function:",
+					servicesError
+				);
+			} else {
+				//console.log("Edge function response:", servicesData);
 
 				// Map Square API service data to your Service type
-				const mappedServices: Service[] =
-					data.objects
-						?.map((squareItem: any) => {
-							const itemData = squareItem.item_data;
-							return {
-								id: squareItem.id,
-								name: itemData?.name || "Unknown Service",
-								price: itemData?.variations?.[0]?.item_variation_data
-									?.price_money?.amount
-									? itemData.variations[0].item_variation_data.price_money
-											.amount / 100
-									: 0, // Convert cents to dollars
-								timeMin: itemData?.service_duration
-									? Math.round(itemData.service_duration / 60)
-									: 15, // Convert seconds to minutes
-								isDeal: itemData?.is_deal || false, // Check if it's marked as a deal
-							};
-						})
-						.filter((service: Service) => service.name !== "Unknown Service") ||
-					[];
+				// Important: use the locally-mapped locations (if present) instead
+				// of the `locations` state variable which won't reflect the
+				// newly-set locations immediately due to setState being async.
+				const effectiveLocations =
+					locations && locations.length > 0
+						? locations
+						: locationsData &&
+						  locationsData.locations &&
+						  locationsData.locations.length > 0
+						? locationsData.locations.map((location: any) => ({
+								id: location.id,
+								name: location.business_name,
+						  }))
+						: [];
 
-				// console.log("Mapped services:", mappedServices);
+				const mappedServices: Service[] = parseSquareCatalogToServices(
+					servicesData,
+					effectiveLocations
+				);
+
 				setRegularServices(mappedServices);
 			}
 		};
@@ -71,28 +102,36 @@ export default function BookingPage() {
 		setIsBookingModalVisible(true);
 	};
 
-	const handleConfirmBooking = (bookingData: BookingFormData) => {
-		// Create the appointment object
-		const appointment: Appointment = {
-			id: `apt_${Date.now()}`, // Simple ID generation
-			date: bookingData.date,
-			time: bookingData.time,
-			services: [...cart.cartItems],
-			totalPrice: cart.getTotalPrice(),
-			totalTime: cart.getTotalTime(),
-			customerName: bookingData.customerName,
-			customerPhone: bookingData.customerPhone,
-			customerEmail: bookingData.customerEmail,
-			status: "pending",
-			notes: bookingData.notes,
-			createdAt: new Date().toISOString(),
+	const handleConfirmBooking = async (bookingData: BookingFormData) => {
+		const booking = {
+			booking_day: bookingData.date,
+			booking_time: bookingData.time,
+			user_id: await supabase.auth
+				.getUser()
+				.then(({ data }) => data.user?.id || ""),
+			service_id: cart.getCartServiceIds()[0],
+			booking_length: cart.getTotalTime(),
+			notes: bookingData.notes || "",
 		};
 
-		// Here you would typically save to your backend/database
-		console.log("Booking confirmed:", appointment);
+		// create a booking the bookings table of supabase
+		await supabase
+			.from("bookings")
+			.insert(booking)
+			.then(({ data, error }) => {
+				if (error) {
+					console.error("Error creating booking:", error);
+					Alert.alert(
+						"Booking Failed",
+						"An error occurred while creating your booking. Please try again."
+					);
+				} else {
+					console.log("Booking created successfully:", data);
+				}
+			});
 
 		// Show success message
-		Alert.alert(
+		await Alert.alert(
 			"Booking Confirmed! 🎉",
 			`Your appointment is scheduled for ${bookingData.date} at ${bookingData.time}. We'll send you a confirmation shortly.`,
 			[
@@ -111,6 +150,15 @@ export default function BookingPage() {
 		setIsBookingModalVisible(false);
 	};
 
+	const handleLocationSelect = (locationId: string) => {
+		setSelectedLocation(locationId);
+		// filter services based on location
+		const filteredServices = regularServices.filter(
+			(s) => s.location_id === locationId
+		);
+		setRegularServices(filteredServices);
+	};
+
 	// Calculate bottom padding for ScrollView
 	const cartHeight = isCartExpanded ? 300 : 60;
 	const scrollViewBottomPadding =
@@ -119,8 +167,8 @@ export default function BookingPage() {
 	return (
 		<View style={{ flex: 1, backgroundColor: colors.background }}>
 			{/* Header with Theme Toggle */}
-			<View 
-				style={{ 
+			<View
+				style={{
 					paddingTop: 60,
 					paddingHorizontal: 20,
 					paddingBottom: 20,
@@ -129,8 +177,16 @@ export default function BookingPage() {
 					borderBottomColor: colors.border,
 				}}
 			>
-				<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-					<Text style={{ fontSize: 28, fontWeight: 'bold', color: colors.text }}>
+				<View
+					style={{
+						flexDirection: "row",
+						justifyContent: "space-between",
+						alignItems: "center",
+					}}
+				>
+					<Text
+						style={{ fontSize: 28, fontWeight: "bold", color: colors.text }}
+					>
 						Book Services
 					</Text>
 					<TouchableOpacity
@@ -140,87 +196,116 @@ export default function BookingPage() {
 							height: 44,
 							borderRadius: 22,
 							backgroundColor: colors.backgroundSecondary,
-							justifyContent: 'center',
-							alignItems: 'center',
+							justifyContent: "center",
+							alignItems: "center",
 							borderWidth: 1,
 							borderColor: colors.border,
 						}}
 					>
-						<Ionicons 
-							name={colorMode === 'dark' ? 'sunny' : 'moon'} 
-							size={22} 
-							color={colors.text} 
+						<Ionicons
+							name={colorMode === "dark" ? "sunny" : "moon"}
+							size={22}
+							color={colors.text}
 						/>
 					</TouchableOpacity>
 				</View>
 			</View>
 
-			<ScrollView
-				style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
-				showsVerticalScrollIndicator={false}
-				contentContainerStyle={{
-					paddingBottom: scrollViewBottomPadding,
-				}}
-			>
-				{/* Regular Services */}
-				<View style={{ marginBottom: 24 }}>
-					<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-						<View 
-							style={{ 
-								width: 4, 
-								height: 28, 
-								backgroundColor: colors.primary, 
+			{selectedLocation === null && locations.length > 0 && (
+				<View
+					className="px-5 pt-5 pb-5 border-b"
+					style={{
+						borderBottomColor: colors.border,
+						backgroundColor: colors.backgroundSecondary,
+					}}
+				>
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							marginBottom: 16,
+						}}
+					>
+						<View
+							style={{
+								width: 4,
+								height: 28,
+								backgroundColor: colors.primary,
 								marginRight: 12,
 								borderRadius: 2,
-							}} 
+							}}
 						/>
-						<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
-							Services
+						<Text
+							style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
+						>
+							Select Category
 						</Text>
 					</View>
-					{regularServices?.map((service) => (
-						<ServiceCard
-							key={service.id}
-							service={service}
-							quantity={cart.getItemQuantity(service.id)}
-							onAdd={() => cart.addToCart(service)}
-							onIncrease={() => cart.increaseQuantity(service.id)}
-							onDecrease={() => cart.decreaseQuantity(service.id)}
-						/>
-					))}
-				</View>
 
-				{/* Deals */}
-				{dealServices.length > 0 && (
+					{/* Full-width buttons styled like service cards */}
+					<View className="space-y-3">
+						{locations.map((location) => {
+							const selected = selectedLocation === location.id;
+							return (
+								<TouchableOpacity
+									key={location.id}
+									onPress={() => handleLocationSelect(location.id)}
+									activeOpacity={0.85}
+									className="w-full rounded-lg px-4 py-4"
+									style={{
+										backgroundColor: selected
+											? colors.primary
+											: colors.background,
+										borderWidth: 1,
+										borderColor: selected ? colors.primary : colors.border,
+									}}
+								>
+									<Text
+										className="text-lg font-semibold"
+										style={{ color: selected ? "#fff" : colors.text }}
+									>
+										{location.name}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
+					</View>
+				</View>
+			)}
+
+			{selectedLocation && (
+				<ScrollView
+					style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{
+						paddingBottom: scrollViewBottomPadding,
+					}}
+				>
+					{/* Regular Services */}
 					<View style={{ marginBottom: 24 }}>
-						<View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-							<View 
-								style={{ 
-									width: 4, 
-									height: 28, 
-									backgroundColor: colors.secondary, 
+						<View
+							style={{
+								flexDirection: "row",
+								alignItems: "center",
+								marginBottom: 16,
+							}}
+						>
+							<View
+								style={{
+									width: 4,
+									height: 28,
+									backgroundColor: colors.primary,
 									marginRight: 12,
 									borderRadius: 2,
-								}} 
-							/>
-							<Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
-								Special Deals
-							</Text>
-							<View 
-								style={{ 
-									backgroundColor: colors.secondaryMuted,
-									paddingHorizontal: 8,
-									paddingVertical: 4,
-									borderRadius: 8,
-									marginLeft: 12,
 								}}
+							/>
+							<Text
+								style={{ fontSize: 24, fontWeight: "700", color: colors.text }}
 							>
-								<Text style={{ color: colors.secondary, fontSize: 12, fontWeight: '600' }}>
-									💰 Save More
-								</Text>
-							</View>
+								Services
+							</Text>
 						</View>
-						{dealServices.map((service) => (
+						{regularServices?.map((service) => (
 							<ServiceCard
 								key={service.id}
 								service={service}
@@ -231,8 +316,69 @@ export default function BookingPage() {
 							/>
 						))}
 					</View>
-				)}
-			</ScrollView>
+
+					{/* Deals */}
+					{dealServices.length > 0 && (
+						<View style={{ marginBottom: 24 }}>
+							<View
+								style={{
+									flexDirection: "row",
+									alignItems: "center",
+									marginBottom: 16,
+								}}
+							>
+								<View
+									style={{
+										width: 4,
+										height: 28,
+										backgroundColor: colors.secondary,
+										marginRight: 12,
+										borderRadius: 2,
+									}}
+								/>
+								<Text
+									style={{
+										fontSize: 24,
+										fontWeight: "700",
+										color: colors.text,
+									}}
+								>
+									Special Deals
+								</Text>
+								<View
+									style={{
+										backgroundColor: colors.secondaryMuted,
+										paddingHorizontal: 8,
+										paddingVertical: 4,
+										borderRadius: 8,
+										marginLeft: 12,
+									}}
+								>
+									<Text
+										style={{
+											color: colors.secondary,
+											fontSize: 12,
+											fontWeight: "600",
+										}}
+									>
+										💰 Save More
+									</Text>
+								</View>
+							</View>
+							{dealServices.map((service) => (
+								<ServiceCard
+									key={service.id}
+									service={service}
+									quantity={cart.getItemQuantity(service.id)}
+									onAdd={() => cart.addToCart(service)}
+									onIncrease={() => cart.increaseQuantity(service.id)}
+									onDecrease={() => cart.decreaseQuantity(service.id)}
+								/>
+							))}
+						</View>
+					)}
+				</ScrollView>
+			)}
 
 			<CartSummary
 				cartItems={cart.cartItems}

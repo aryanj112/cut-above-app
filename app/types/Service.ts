@@ -4,4 +4,5 @@ export interface Service {
   price: number;
   timeMin: number;
   isDeal: boolean;
+  location_id: string;
 }
