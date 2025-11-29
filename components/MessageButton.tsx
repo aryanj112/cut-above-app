@@ -7,7 +7,7 @@ import { useState } from "react";
 import * as Linking from "expo-linking";
 import { ActionSheetIOS, Platform, Pressable, Modal, View } from "react-native";
 import { PhoneIcon } from "@/components/ui/icon";
-import { TbMessageCircle } from "react-icons/tb";
+import { MessageCircleIcon } from "@/components/ui/icon";
 
 export default function MessageButton() {
     const [open, setOpen] = useState(false);
@@ -30,7 +30,7 @@ export default function MessageButton() {
 
     return (
         <>
-            <Box className="absolute bottom-16 right-6 z-50">
+            <Box className="absolute bottom-6 right-6 z-50">
                 <Pressable
                     onPress={() => setOpen(true)}
                     style={{
@@ -47,7 +47,9 @@ export default function MessageButton() {
                         elevation: 6,
                     }}
                 >
-                    <PhoneIcon className="text-white h-2 w-2" />
+                    {/* <TbMessageCircle className="text-white h-6 w-6" /> */}
+                    {/* <PhoneIcon className="text-white h-2 w-2" /> */}
+                    <MessageCircleIcon className="text-white h-6 w-6" />
                 </Pressable>
             </Box>
             <Modal

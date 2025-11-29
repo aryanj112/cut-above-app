@@ -4,6 +4,7 @@ import services from "../../../data/services.json";
 import { ServiceCard } from "../../../components/booking/ServiceCards";
 import { CartSummary } from "../../../components/booking/CartSummary";
 import { BookingModal } from "../../../components/booking/BookingModal";
+import MessageButton from "@/components/MessageButton";
 import { useCart } from "../../hooks/useCart";
 import { Service } from "../../types";
 import { BookingFormData, Appointment } from "../../types/Appointment";
@@ -437,6 +438,7 @@ export default function BookingPage() {
 				locationId={selectedLocation}
 				locationTimezone={locations.find(loc => loc.id === selectedLocation)?.timezone}
 			/>
+			<MessageButton />
 		</View>
 	);
 }
