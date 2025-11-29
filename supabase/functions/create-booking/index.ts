@@ -121,25 +121,6 @@ Deno.serve(async (req) => {
 				}
 			);
 		}
-
-		// Get the Square booking ID from the response
-		const squareBookingData = await createClientResponse.json();
-		const squareBookingId = squareBookingData?.booking?.id;
-
-		// Update the Supabase booking record with the Square booking ID
-		if (squareBookingId) {
-			const { error: updateError } = await supabase
-				.from("bookings")
-				.update({ square_booking_id: squareBookingId })
-				.eq("id", payload.record.id);
-
-			if (updateError) {
-				console.error("Error updating booking with Square ID:", updateError);
-				// Don't fail the request - the booking was created successfully
-			} else {
-				console.log("Successfully saved Square booking ID:", squareBookingId);
-			}
-		}
 	}
 
 	return new Response(
