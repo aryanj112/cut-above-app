@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Image,
   TextInput,
@@ -408,7 +407,7 @@ export default function AccountPage() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView
+        <View
           contentContainerStyle={{ paddingBottom: 140 }}
           style={{ paddingHorizontal: 20, paddingTop: 20 }}
         >
@@ -517,7 +516,7 @@ export default function AccountPage() {
               }
             }}
           />
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
 
       <Modal
