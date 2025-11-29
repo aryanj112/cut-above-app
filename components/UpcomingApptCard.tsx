@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import CancelModal from '@/components/CancelModal';
+import RescheduleModal from '@/components/RescheduleModal';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -12,20 +13,44 @@ type UpcomingApptCardProps = {
   date: string;
   barber: string;
   cut: string;
+  bookingId?: string;
+  locationId?: string;
+  locationTimezone?: string;
+  serviceVariationId?: string;
+  onCancelSuccess?: () => void;
 }
 
-export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCardProps) {
-  const [showModal, setShowModal] = useState(false);
+export default function UpcomingApptCard({ 
+  date, 
+  barber, 
+  cut, 
+  bookingId, 
+  locationId,
+  locationTimezone,
+  serviceVariationId,
+  onCancelSuccess 
+}: UpcomingApptCardProps) {
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const { colors } = useTheme();
 
-  // Format into a date like "September 21, 2025 at 3:30 PM"
-  const formattedDate = new Date(date).toLocaleString("en-US", {
+  // Ensure the date string is treated as UTC by adding 'Z' if not present
+  const utcDateString = date.endsWith('Z') ? date : `${date}Z`;
+  
+  // Format into a date like "September 21, 2025 at 3:30 PM" in the location's timezone
+  const formattedDate = new Date(utcDateString).toLocaleString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: locationTimezone || 'America/New_York', // Use location timezone
   });
+
+  // Extract booking_day and booking_time (keep in UTC for API calls)
+  const dateObj = new Date(utcDateString);
+  const bookingDay = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+  const bookingTime = dateObj.toISOString().split('T')[1].split('.')[0]; // HH:MM:SS
 
   return (
     <View 
@@ -101,6 +126,7 @@ export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCard
             borderWidth: 1,
             borderColor: colors.secondary,
           }}
+          onPress={() => setShowRescheduleModal(true)}
           activeOpacity={0.7}
         >
           <Text style={{ color: colors.secondary, textAlign: 'center', fontWeight: '600', fontSize: 14 }}>
@@ -117,7 +143,7 @@ export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCard
             borderWidth: 1,
             borderColor: colors.error,
           }}
-          onPress={() => setShowModal(!showModal)}
+          onPress={() => setShowCancelModal(true)}
           activeOpacity={0.7}
         >
           <Text style={{ color: colors.error, textAlign: 'center', fontWeight: '600', fontSize: 14 }}>
@@ -126,7 +152,38 @@ export default function UpcomingApptCard({ date, barber, cut }: UpcomingApptCard
         </TouchableOpacity>
       </View>
 
-      {showModal && <CancelModal showModal={showModal} setShowModal={setShowModal} date={date} formattedDate={formattedDate} />}
+      {/* Cancel Modal */}
+      {showCancelModal && (
+        <CancelModal 
+          showModal={showCancelModal} 
+          setShowModal={setShowCancelModal} 
+          date={date} 
+          formattedDate={formattedDate}
+          bookingId={bookingId}
+          onCancelSuccess={onCancelSuccess}
+        />
+      )}
+
+      {/* Reschedule Modal */}
+      {showRescheduleModal && bookingId && locationId && serviceVariationId && (
+        <RescheduleModal
+          visible={showRescheduleModal}
+          onClose={() => setShowRescheduleModal(false)}
+          bookingId={bookingId}
+          currentDate={bookingDay}
+          currentTime={bookingTime}
+          serviceName={cut}
+          locationId={locationId}
+          locationTimezone={locationTimezone}
+          serviceVariationId={serviceVariationId}
+          onRescheduleSuccess={() => {
+            setShowRescheduleModal(false);
+            if (onCancelSuccess) {
+              onCancelSuccess(); // Reuse this callback to refresh the appointments
+            }
+          }}
+        />
+      )}
     </View>
   );
 }
