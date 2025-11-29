@@ -63,6 +63,25 @@ export function useCart() {
     setCartItems([]);
   };
 
+  const getCartItems = () => {
+    // return a hashmap with serviceId as key and quantity as value
+    const cartMap: { [key: string]: number } = {};
+    cartItems.forEach(item => {
+      cartMap[item.service.id] = item.quantity;
+    });
+    return cartMap;
+  };
+
+  const getCartServiceIds = (): string[] => {
+    // return a set of serviceIds in the cart (composite IDs)
+    return cartItems.map(item => item.service.id);
+  };
+
+  const getCartVariationIds = (): string[] => {
+    // return a set of variation_ids in the cart (actual Square IDs)
+    return cartItems.map(item => item.service.variation_id);
+  };
+
   return {
     cartItems,
     addToCart,
@@ -72,5 +91,8 @@ export function useCart() {
     getTotalPrice,
     getTotalTime,
     clearCart,
+    getCartItems,
+    getCartServiceIds,
+    getCartVariationIds,
   };
 }

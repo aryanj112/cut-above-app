@@ -16,8 +16,10 @@ export interface Appointment {
 }
 
 export interface BookingFormData {
-  date: string;
-  time: string;
+  date: string; // YYYY-MM-DD format for backend
+  time: string; // HH:MM:SS in UTC for backend
+  displayDate?: string; // Human-readable date for UI
+  displayTime?: string; // Human-readable time in user's timezone for UI
   customerName: string;
   customerPhone: string;
   customerEmail: string;

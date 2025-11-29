@@ -4,7 +4,7 @@ console.info('server started');
 
 Deno.serve(async (req) => {
   try {
-    const servicesResponse = await fetch('https://connect.squareup.com/v2/catalog/list', {
+    const res = await fetch('https://connect.squareup.com/v2/locations', {
       headers: {
         "Square-Version": "2025-10-16",
         "Authorization": `Bearer ${Deno.env.get("SQUARE_ACCESS_TOKEN")}`,
@@ -12,22 +12,22 @@ Deno.serve(async (req) => {
       }
     });
 
-    if (!servicesResponse.ok) {
-      const errorText = await servicesResponse.text();
+    if (!res.ok) {
+      const errorText = await res.text();
       console.error("Square API Error:", errorText);
       return new Response(
         JSON.stringify({
-          error: "Failed to fetch services from Square",
+          error: "Failed to fetch locations from Square",
           details: errorText
         }),
         {
-          status: servicesResponse.status,
+          status: res.status,
           headers: { "Content-Type": "application/json" }
         }
       );
     }
 
-    const data = await servicesResponse.json();
+    const data = await res.json();
     return new Response(
       JSON.stringify(data),
       {
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error in get-services function:", error);
+    console.error("Error in get-locations function:", error);
     return new Response(
       JSON.stringify({
         error: "Internal server error",

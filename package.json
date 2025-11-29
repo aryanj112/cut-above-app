@@ -60,6 +60,7 @@
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "~0.20.0",
     "react-stately": "^3.39.0",
+    "supabase": "^2.63.1",
     "tailwind-variants": "^0.1.20",
     "tailwindcss": "^3.4.17"
   },
