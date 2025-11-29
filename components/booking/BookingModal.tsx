@@ -66,10 +66,11 @@ export function BookingModal({
 	};
 
 	const handleTimeSelect = (timeSlot: Date) => {
-		// Store the display string for UI
-		setSelectedTime(timeSlot.toLocaleTimeString([], {
+		// Store the display string for UI in the location's timezone
+		setSelectedTime(timeSlot.toLocaleTimeString('en-US', {
 			hour: "2-digit",
 			minute: "2-digit",
+			timeZone: locationTimezone || 'America/New_York',
 		}));
 		// Store the actual Date object to preserve UTC time
 		setSelectedTimeSlot(timeSlot);
@@ -308,9 +309,10 @@ export function BookingModal({
 
 								<View className="flex-row flex-wrap gap-3">
 									{timeSlots.map((time) => {
-										const displayTime = time.toLocaleTimeString([], {
+										const displayTime = time.toLocaleTimeString('en-US', {
 											hour: "2-digit",
 											minute: "2-digit",
+											timeZone: locationTimezone || 'America/New_York',
 										});
 										return (
 											<TouchableOpacity

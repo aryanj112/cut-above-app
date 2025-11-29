@@ -82,9 +82,10 @@ export default function RescheduleModal({
   };
 
   const handleTimeSelect = (time: Date) => {
-    const displayTime = time.toLocaleTimeString([], {
+    const displayTime = time.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: locationTimezone || 'America/New_York',
     });
     setSelectedTimeSlot(time);
     setSelectedTime(displayTime);
@@ -112,15 +113,31 @@ export default function RescheduleModal({
 
       if (error) {
         console.error('Error rescheduling booking:', error);
-        Alert.alert(
-          'Reschedule Failed',
-          'An error occurred while rescheduling your appointment. Please try again.'
-        );
+        
+        // Check if it's a 24-hour restriction error
+        if (data?.message && data.message.includes('24 hours')) {
+          Alert.alert(
+            'Cannot Reschedule',
+            data.message
+          );
+        } else {
+          Alert.alert(
+            'Reschedule Failed',
+            'An error occurred while rescheduling your appointment. Please try again.'
+          );
+        }
       } else {
         console.log('Booking rescheduled successfully:', data);
+        
+        // Check if Square was updated
+        let message = `Your appointment has been moved to ${formatDate(selectedDate)} at ${selectedTime}.`;
+        if (data.square_warning) {
+          message += `\n\nNote: ${data.square_warning} Please contact support if you experience any issues.`;
+        }
+        
         Alert.alert(
           'Appointment Rescheduled! 🎉',
-          `Your appointment has been moved to ${formatDate(selectedDate)} at ${selectedTime}.`,
+          message,
           [
             {
               text: 'OK',
@@ -234,11 +251,11 @@ export default function RescheduleModal({
             <Text className="text-sm font-semibold text-gray-900">{serviceName}</Text>
             <Text className="text-xs text-gray-600 mt-1">
               {formatDate(currentDate)} at{' '}
-              {new Date(`${currentDate}T${currentTime}`).toLocaleTimeString('en-US', {
+              {new Date(`${currentDate}T${currentTime}Z`).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true,
-                timeZone: locationTimezone || 'America/Los_Angeles',
+                timeZone: locationTimezone || 'America/New_York',
               })}
             </Text>
           </View>
@@ -308,9 +325,10 @@ export default function RescheduleModal({
 
                 <View className="flex-row flex-wrap gap-3">
                   {timeSlots.map((time) => {
-                    const displayTime = time.toLocaleTimeString([], {
+                    const displayTime = time.toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
+                      timeZone: locationTimezone || 'America/New_York',
                     });
                     return (
                       <TouchableOpacity

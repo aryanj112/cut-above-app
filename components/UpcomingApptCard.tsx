@@ -3,7 +3,7 @@
 // Description: UI for upcoming appointment card
 
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import CancelModal from '@/components/CancelModal';
 import RescheduleModal from '@/components/RescheduleModal';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -51,6 +51,24 @@ export default function UpcomingApptCard({
   const dateObj = new Date(utcDateString);
   const bookingDay = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
   const bookingTime = dateObj.toISOString().split('T')[1].split('.')[0]; // HH:MM:SS
+
+  // Check if appointment is within 24 hours
+  const now = new Date();
+  const appointmentTime = new Date(utcDateString);
+  const hoursUntilAppointment = (appointmentTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+  const canReschedule = hoursUntilAppointment >= 24;
+
+  const handleReschedulePress = () => {
+    if (!canReschedule) {
+      Alert.alert(
+        "Cannot Reschedule",
+        "Appointments can only be rescheduled at least 24 hours in advance. Please contact us directly for last-minute changes.",
+        [{ text: "OK" }]
+      );
+    } else {
+      setShowRescheduleModal(true);
+    }
+  };
 
   return (
     <View 
@@ -120,16 +138,17 @@ export default function UpcomingApptCard({
         <TouchableOpacity
           style={{
             flex: 1,
-            backgroundColor: colors.secondaryMuted,
+            backgroundColor: canReschedule ? colors.secondaryMuted : colors.backgroundSecondary,
             paddingVertical: 12,
             borderRadius: 10,
             borderWidth: 1,
-            borderColor: colors.secondary,
+            borderColor: canReschedule ? colors.secondary : colors.border,
+            opacity: canReschedule ? 1 : 0.5,
           }}
-          onPress={() => setShowRescheduleModal(true)}
+          onPress={handleReschedulePress}
           activeOpacity={0.7}
         >
-          <Text style={{ color: colors.secondary, textAlign: 'center', fontWeight: '600', fontSize: 14 }}>
+          <Text style={{ color: canReschedule ? colors.secondary : colors.textMuted, textAlign: 'center', fontWeight: '600', fontSize: 14 }}>
             Reschedule
           </Text>
         </TouchableOpacity>
@@ -151,6 +170,16 @@ export default function UpcomingApptCard({
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* 24-hour notice warning */}
+      {!canReschedule && (
+        <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'flex-start' }}>
+          <Ionicons name="information-circle" size={16} color={colors.textMuted} style={{ marginRight: 6, marginTop: 2 }} />
+          <Text style={{ fontSize: 12, color: colors.textMuted, flex: 1, lineHeight: 16 }}>
+            Rescheduling requires at least 24 hours notice. Contact us for assistance.
+          </Text>
+        </View>
+      )}
 
       {/* Cancel Modal */}
       {showCancelModal && (
