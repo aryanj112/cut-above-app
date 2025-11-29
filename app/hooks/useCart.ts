@@ -73,8 +73,13 @@ export function useCart() {
   };
 
   const getCartServiceIds = (): string[] => {
-    // return a set of serviceIds in the cart
+    // return a set of serviceIds in the cart (composite IDs)
     return cartItems.map(item => item.service.id);
+  };
+
+  const getCartVariationIds = (): string[] => {
+    // return a set of variation_ids in the cart (actual Square IDs)
+    return cartItems.map(item => item.service.variation_id);
   };
 
   return {
@@ -88,5 +93,6 @@ export function useCart() {
     clearCart,
     getCartItems,
     getCartServiceIds,
+    getCartVariationIds,
   };
 }

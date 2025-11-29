@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 	// verify that this row that was inserted is actually in the bookings table
 	const { data, error } = await supabase
 		.from("bookings")
-		.select("user_id, service_id, booking_day, booking_time, notes")
+		.select("user_id, service_id, booking_day, booking_time, notes, location_id")
 		.eq("id", payload.record.id)
 		.single();
 
@@ -73,6 +73,9 @@ Deno.serve(async (req) => {
 		let square_id = data?.square_id;
 		await console.log(booking_data);
 
+		// Use location_id from booking data, fallback to default if not provided
+		const locationId = booking_data.location_id || "LD3K70KJMNH4G";
+
 		// create a booking on square
 		const createClientResponse = await fetch(
 			"https://connect.squareup.com/v2/bookings",
@@ -86,7 +89,7 @@ Deno.serve(async (req) => {
 				body: JSON.stringify({
 					booking: {
 						customer_id: square_id,
-						location_id: "LD3K70KJMNH4G",
+						location_id: locationId,
 						location_type: "BUSINESS_LOCATION",
 						start_at: `${booking_data.booking_day}T${booking_data.booking_time}Z`,
 						appointment_segments: [
