@@ -152,12 +152,17 @@ export default function BookingPage() {
 
 	const handleLocationSelect = (locationId: string) => {
 		setSelectedLocation(locationId);
-		// filter services based on location
-		const filteredServices = regularServices.filter(
-			(s) => s.location_id === locationId
-		);
-		setRegularServices(filteredServices);
 	};
+
+	const handleBackToLocationSelect = () => {
+		setSelectedLocation(null);
+		cart.clearCart();
+	};
+
+	// Filter services based on selected location
+	const filteredServices = selectedLocation
+		? regularServices.filter((s) => s.location_id === selectedLocation)
+		: regularServices;
 
 	// Calculate bottom padding for ScrollView
 	const cartHeight = isCartExpanded ? 300 : 60;
@@ -184,11 +189,35 @@ export default function BookingPage() {
 						alignItems: "center",
 					}}
 				>
-					<Text
-						style={{ fontSize: 28, fontWeight: "bold", color: colors.text }}
-					>
-						Book Services
-					</Text>
+					<View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+						{selectedLocation && (
+							<TouchableOpacity
+								onPress={handleBackToLocationSelect}
+								style={{
+									width: 44,
+									height: 44,
+									borderRadius: 22,
+									backgroundColor: colors.backgroundSecondary,
+									justifyContent: "center",
+									alignItems: "center",
+									borderWidth: 1,
+									borderColor: colors.border,
+									marginRight: 12,
+								}}
+							>
+								<Ionicons
+									name="arrow-back"
+									size={22}
+									color={colors.text}
+								/>
+							</TouchableOpacity>
+						)}
+						<Text
+							style={{ fontSize: 28, fontWeight: "bold", color: colors.text }}
+						>
+							Book Services
+						</Text>
+					</View>
 					<TouchableOpacity
 						onPress={toggleColorMode}
 						style={{
@@ -305,7 +334,7 @@ export default function BookingPage() {
 								Services
 							</Text>
 						</View>
-						{regularServices?.map((service) => (
+						{filteredServices?.map((service) => (
 							<ServiceCard
 								key={service.id}
 								service={service}
