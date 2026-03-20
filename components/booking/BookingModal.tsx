@@ -23,7 +23,7 @@ interface BookingModalProps {
 	cartItems: CartItem[];
 	totalPrice: number;
 	totalTime: number;
-	onConfirmBooking: (bookingData: BookingFormData) => void;
+	onConfirmBooking: (bookingData: BookingFormData) => Promise<void>;
 	locationId: string | null;
 	locationTimezone?: string;
 }
@@ -102,9 +102,8 @@ export function BookingModal({
 			notes,
 		};
 
-		onConfirmBooking(bookingData);
-		handleClose();
-	};
+			await onConfirmBooking(bookingData);
+		};
 
 	const goBack = () => {
 		if (currentStep === "time") {

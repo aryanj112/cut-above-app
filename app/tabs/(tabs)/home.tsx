@@ -190,9 +190,10 @@ export default function HomePage() {
         </View>
       </View>
 
-      <View
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
       >
         {/* Logo Section */}
         <View style={{ alignItems: 'center', paddingVertical: 30 }}>
@@ -307,7 +308,7 @@ export default function HomePage() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
       <MessageButton />
 
